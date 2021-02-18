@@ -48,7 +48,7 @@ all: $(exeobj)
 DISPLAY = SDL
 
 CFLAGS := -I. -I./include/ -I$(SDL_DIR)/include -I$(FFMPEG_DIR)/include \
-		 -L$(SDL_DIR)/lib  -lSDL2 -lSDL2_test -lSDL2_ttf \
+		 -L$(SDL_DIR)/lib  -lSDL2 -lSDL2_ttf \
 		 -L$(FFMPEG_DIR)/lib -L./lib -lavcodec -lavformat -lswscale -lavutil -lavdevice -lavfilter -lpostproc \
 		#alsa_lib/include/ -L alsa_lib/lib/ -lasound
 

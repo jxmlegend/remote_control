@@ -13,6 +13,7 @@
 #define HDR_TRANSPORT "Transport"
 #define HDR_SESSION "Session"
 
+#define DEFAULT_TTL 32
 
 typedef enum RTSP_OPT{
 	UNKNOWN = 0,

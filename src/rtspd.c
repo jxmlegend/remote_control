@@ -75,7 +75,73 @@ void send_reply(int code, struct client *cli)
 	memset(cli->rtsp_buf, 0, sizeof(cli->rtsp_buf));
 	sprintf(cli->rtsp_buf, "%s %d %s"RTSP_EL"CSeq: %d"RTSP_EL, RTSP_VER, code, (char *)get_stat(code), cli->rtsp_cseq);
 	strcat(cli->rtsp_buf, RTSP_EL);
-	//send_msg();
+	send_msg(cli->fd, cli->rtsp_buf, strlen(cli->rtsp_buf));
+}
+
+static int parse_url(const char *url, char *server, uint16_t *port, char *file_name)
+{
+	char *token, *port_str;
+	char temp[128] = {0};
+	
+	strcpy(temp, url);
+	if(strncmp(temp, "rtsp://", 7) == 0)
+	{
+		token = strtok(&temp[7], " :/\t\n");
+		strcpy(server, token);
+		
+		port_str = strtok(&temp[strlen(server) + 7 + 1], " /\t\n");
+		
+		if(port_str)
+			*port = (uint16_t)atol(port_str);
+		else
+			*port = 554;
+		
+		token = strtok(NULL, " ");
+		
+		if(token)
+			strcpy(file_name, token);
+		else
+			file_name[0] = '\0';
+
+		return SUCCESS;
+	}
+	return ERROR;
+}
+
+int check_rtsp_url(struct client *cli)
+{
+	int port;
+	char url[128];
+	char object[128], server[128];	
+	
+	if(!sscanf(cli->rtsp_buf, " %*s %254s ", url))
+	{
+		send_reply(400, cli);
+		return ERROR;
+	}
+	/* validate the url */
+	if(parse_url(url, server, &port, object) != SUCCESS)
+	{
+		send_reply(400, cli);
+		return ERROR;
+	}
+	DEBUG("server %s port %d object %s", server, port, object);
+	strcpy(cli->host_name, server);
+	if(strstr(object, "trackID") || strcmp(object, "") == 0)
+	{
+		strcpy(object, cli->file_name);
+	}
+	else
+	{
+		strcpy(cli->file_name, object);
+	}
+	return SUCCESS;	
+}
+
+int check_rtsp_filename(struct client *cli)
+{
+	
+	return SUCCESS;
 }
 
 int rtsp_terardown()
@@ -83,27 +149,269 @@ int rtsp_terardown()
 
 }
 
-int rtsp_play()
+int send_play_reply(struct client *cli, int code)
 {
-
+	char temp[255];
+	
+  /* build a reply message */
+    sprintf(cli->rtsp_buf, "%s %d %s"RTSP_EL"CSeq: %d"RTSP_EL"Server: %s/%s"RTSP_EL,
+		 RTSP_VER, code, (char *)get_stat(code), cli->rtsp_cseq, PACKAGE,VERSION);
+    add_time_stamp(cli->rtsp_buf, 0); 
+    strcat(cli->rtsp_buf, "Session: ");
+    sprintf(temp, "%d", cli->session_id);
+    strcat(cli->rtsp_buf, temp);
+    strcat(cli->rtsp_buf, RTSP_EL);
+    strcat(cli->rtsp_buf, RTSP_EL);
+	return send_msg(cli->fd, cli->rtsp_buf, strlen(cli->rtsp_buf));
 }
 
-int rtsp_setup()
+int rtsp_play(struct client *cli)
 {
-
+	char *p = NULL;
+	char trash[255];
+		
+	if((p = strstr(cli->rtsp_buf, HDR_SESSION)) != NULL)
+	{
+		if(sscanf(p, "%254s %d", trash, &cli->session_id) == 2)
+		{
+			return send_play_reply(cli, 200);
+		}
+		else
+		{
+			send_reply(cli, 454);
+			return ERROR;
+		}
+	}
+	send_reply(cli, 400);
+	return ERROR;
 }
 
-int rtsp_describe()
+int send_setup_reply(struct client *cli, int code)
 {
+    char temp[30];
+    char ttl[4];
+
+    /* build a reply message */
+    sprintf(cli->rtsp_buf, "%s %d %s"RTSP_EL"CSeq: %d"RTSP_EL"Server: %s/%s"RTSP_EL,
+		RTSP_VER, code, (char *)get_stat(code), cli->rtsp_cseq, PACKAGE,VERSION);
+    add_time_stamp(cli->rtsp_buf, 0); 
+    strcat(cli->rtsp_buf, "Session: ");
+    sprintf(temp, "%d", cli->session_id);
+    strcat(cli->rtsp_buf, temp);
+    strcat(cli->rtsp_buf, RTSP_EL);
+    /**** unicast  ****/
+    strcat(cli->rtsp_buf, "Transport: RTP/AVP;unicast;client_port=");
+    sprintf(temp, "%d", cli->rtp_port);
+    strcat(cli->rtsp_buf, temp);
+    strcat(cli->rtsp_buf, "-");
+    sprintf(temp, "%d", cli->rtcp_port);
+    strcat(cli->rtsp_buf, temp);
+    //sprintf(temp, ";source=%s", get_address());
+    strcat(cli->rtsp_buf, cli->host_name);
+    strcat(cli->rtsp_buf, temp);
+#if 0
+    strcat(cli->rtsp_buf, ";server_port=");
+    sprintf(temp, "%d", rtsp[cur_conn_num]->cmd_port.rtp_ser_port);
+    strcat(cli->rtsp_buf, temp);
+    strcat(cli->rtsp_buf, "-");
+    sprintf(temp, "%d", rtsp[cur_conn_num]->cmd_port.rtcp_ser_port);
+    strcat(cli->rtsp_buf, temp);
+#endif
+    sprintf(temp, ";ssrc=%u", cli->ssrc);/*xxx*/
+    strcat(cli->rtsp_buf, temp);   
+    strcat(cli->rtsp_buf,";ttl=");
+    sprintf(ttl,"%d",(int32_t)DEFAULT_TTL);
+    strcat(cli->rtsp_buf, ttl);
+    strcat(cli->rtsp_buf, RTSP_EL);
+    strcat(cli->rtsp_buf, RTSP_EL);
+
+	return send_msg(cli->fd, cli->rtsp_buf, strlen(cli->rtsp_buf));
+}
+
+int rtsp_setup(struct client *cli)
+{
+	char *p = NULL;
+	char trash[255], line[255];
+	
+	if(check_rtsp_url(cli))
+		return ERROR;
+
+	if(check_rtsp_filename(cli))
+		return ERROR;
+	
+	if(get_rtsp_cseg(cli))
+		return ERROR;
+	
+	if((p = strstr(cli->rtsp_buf, "client_port")) == NULL &&
+		strstr(cli->rtsp_buf, "multicast") == NULL)
+	{
+		/* Not Acceptable */
+		send_reply(406, cli);
+		return ERROR;
+	}
+	
+	if((p = strstr(cli->rtsp_buf, HDR_TRANSPORT)) == NULL)
+	{
+		/* Not Acceptable */
+		send_reply(406, cli);
+		return ERROR;
+	}
+	
+	if(sscanf(p, "%10s%255s", trash, line) != 2)
+	{
+		/* Bad Request */
+		send_reply(400, cli);
+		return ERROR;
+	}
+	
+	/* get client rtp and rtcp port */
+	if(strstr(line, "client_port") != NULL)
+	{
+		p = strstr(line, "client_port");
+		p = strstr(p, "=");
+		sscanf(p + 1, "%d", &cli->rtp_port);
+		p = strstr(p, "-");
+		sscanf(p + 1, "%d", &cli->rtcp_port);
+	}
+	DEBUG("cli->rtp_port %d cli->rtcp_port %d", cli->rtp_port, cli->rtcp_port);
+	//get_server_port();	
+	//cli->seq = get_randdom_seq();
+	//cli->ssrc = 0x69257765;
+	//cli->timestamp = random32(0);
+	return send_setup_reply(cli, 200);
+}
+
+char *get_sdp_user_name(char *buf)
+{
+	strcpy(buf, PACKAGE);
+	return buf;
+}
+
+float ntp_time(time_t t)
+{
+	return (float)t + 2208988800U;
+}
+
+char *get_sdp_session_id(char *buf)
+{
+	sprintf(buf, "%.0f", ntp_time(time(NULL)));
+	return buf;
+}
+
+char *get_sdp_version(char *buf)
+{
+	sprintf(buf, "%.0f", ntp_time(time(NULL)));
+	return buf;
+}
+
+int get_describe_sdp(struct client *cli)
+{
+	char buf[30] = {0};
+		
+    strcpy(cli->sdp_buf, "v=0"SDP_EL);
+    strcpy(cli->sdp_buf, "o=");
+    strcpy(cli->sdp_buf, get_sdp_user_name(buf));
+    strcpy(cli->sdp_buf, " ");
+    strcpy(cli->sdp_buf, get_sdp_session_id(buf));
+    strcpy(cli->sdp_buf, " ");
+    strcpy(cli->sdp_buf, get_sdp_version(buf));
+    strcpy(cli->sdp_buf, SDP_EL);
+    strcpy(cli->sdp_buf, "c=");
+    strcpy(cli->sdp_buf, "IN ");        //Network type :Internal
+    strcpy(cli->sdp_buf, "IP4 ");       //Address type IP4
+    strcpy(cli->sdp_buf, cli->host_name);
+    strcpy(cli->sdp_buf, SDP_EL);
+    strcpy(cli->sdp_buf, "s=RTSP Session"SDP_EL);
+    sprintf(cli->sdp_buf + strlen(cli->sdp_buf), "i=%s %s Streaming Server"SDP_EL, 
+			PACKAGE, VERSION);   
+    sprintf(cli->sdp_buf + strlen(cli->sdp_buf), "u=%s"SDP_EL, cli->file_name);
+    strcpy(cli->sdp_buf, "t=0 0"SDP_EL);
+    //media specific
+    strcpy(cli->sdp_buf, "m=");
+    strcpy(cli->sdp_buf, "vide 0");
+    strcpy(cli->sdp_buf, "RTP/AVP");  //Use UDP
+	cli->payload_type = 96;
+    sprintf(cli->sdp_buf + strlen(cli->sdp_buf), "%d"SDP_EL, cli->payload_type);
+    if(cli->payload_type >= 96)
+    {   
+        strcat(cli->sdp_buf, "a=rtpmap:");
+        sprintf(cli->sdp_buf + strlen(cli->sdp_buf), "%d", cli->payload_type);
+        strcat(cli->sdp_buf, " "); 
+        strcat(cli->sdp_buf, "H264/90000");
+        strcat(cli->sdp_buf, SDP_EL);
+        strcat(cli->sdp_buf, "a=fmtp:96 packetization-mode=1;"
+			"profile-level-id=1EE042;sprop-parameter-sets=QuAe2gLASRA=,zjCkgA==");
+        strcat(cli->sdp_buf, SDP_EL);
+        strcat(cli->sdp_buf, "a=control:");
+        sprintf(cli->sdp_buf + strlen(cli->sdp_buf), "rtsp://%s/%s/trackID=0", 
+				cli->host_name, cli->file_name);
+        strcat(cli->sdp_buf, SDP_EL);
+    }       
+    strcat(cli->sdp_buf, SDP_EL);
+    return SUCCESS;
+}
+
+void add_time_stamp(char *buf, int crlf)
+{
+	struct tm *t;
+	time_t now;
+		
+	now = time(NULL);
+	t = gmtime(&now);
+	strftime(buf + strlen(buf), 38, "Date: %a, %d %b %Y %H:%M:%S GMT"RTSP_EL, t);
+		
+	if(crlf)
+		strcat(buf, "\r\n");
+}
 
 
-	//send()
+int send_describe_reply(struct client *cli, int code)
+{
+	sprintf(cli->rtsp_buf, "%s %d %s"RTSP_EL"CSeq: %d"RTSP_EL"Server: %s/%s"RTSP_EL,
+		RTSP_VER, code, (char *)get_stat(code), cli->rtsp_cseq, PACKAGE, VERSION);
+	add_time_stamp(cli->rtsp_buf, 0);
+	strcat(cli->rtsp_buf, "Content-Type: application/sdp"RTSP_EL);
+	sprintf(cli->rtsp_buf + strlen(cli->rtsp_buf), "Content-Base: rtsp://%s/%s/"
+			RTSP_EL, cli->host_name, cli->file_name);	
+	sprintf(cli->rtsp_buf + strlen(cli->rtsp_buf), "Content-Length: %d"RTSP_EL, 
+			strlen(cli->sdp_buf));
+	
+	strcat(cli->rtsp_buf, RTSP_EL);
+	strcat(cli->rtsp_buf, cli->sdp_buf);
+	
+	return send_msg(cli->fd, cli->rtsp_buf, strlen(cli->rtsp_buf));
+}
+
+int rtsp_describe(struct client *cli)
+{
+	if(check_rtsp_url(cli))
+		return ERROR;
+
+	if(check_rtsp_filename(cli))
+		return ERROR;
+
+	/* get the description format SDP is recomended */
+	if(strstr(cli->rtsp_buf, HDR_ACCEPT) != NULL)
+	{
+		if(strstr(cli->rtsp_buf, "application/sdp") == NULL)
+		{
+			send_reply(551, cli);
+			return ERROR;
+		}
+	}
+
+	if(get_rtsp_cseg(cli) != SUCCESS)
+		return ERROR;
+	
+	if(get_describe_sdp(cli) != SUCCESS)
+		return ERROR;
+		
+	return send_describe_reply(cli, 200);
 }
 
 
 int set_option_reply(struct client *cli, int code)
 {
-	//sprintf(cli->rtsp_buf, 
 	sprintf(cli->rtsp_buf, "%s %d %s"RTSP_EL"CSeq: %d"RTSP_EL, RTSP_VER, code, (char *)get_stat(code), cli->rtsp_cseq);	
 	strcat(cli->rtsp_buf, "Public: OPTIONS,DESCRIBE,SETUP,PLAY,PAUSE,TEARDOWN"RTSP_EL);
 	strcat(cli->rtsp_buf, RTSP_EL);
@@ -146,16 +454,16 @@ int rtsp_cmd_match(struct client *cli)
 			ret = rtsp_options(cli);
 			break;
 		case DESCRIBE:
-			ret = rtsp_options(cli);
+			ret = rtsp_describe(cli);
 			break;
 		case SETUP:
-			ret = rtsp_options(cli);
+			ret = rtsp_setup(cli);
 			break;
 		case PLAY:
-			ret = rtsp_options(cli);
+			ret = rtsp_play(cli);
 			break;
 		case TEARDOWN:
-			ret = ERROR;
+			//ret = rtsp_teardown(cli);
 			break;
 		case UNKNOWN:
 			ret = ERROR;
@@ -163,8 +471,6 @@ int rtsp_cmd_match(struct client *cli)
 	}
 	return ret;
 }
-
-
 
 int get_rtsp_method(struct client *cli)
 {
