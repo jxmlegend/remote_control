@@ -16,26 +16,28 @@ int convert_mode(int mode)
 
 }
 
-void close_client()
+void close_client(struct client *cli)
 {
 
+	close_fd(cli->fd);
 }
 
 int process_server_msg(struct client *cli)
 {
 	int ret;
-	
+	DEBUG("read_msg_order(cli->head_buf) %d", read_msg_order(cli->head_buf));
 	switch(read_msg_order(cli->head_buf))
 	{
 		/* pipe msg */
+		case EXIT_PIPE:
+			ret = EXIT_PIPE;
+			break;
 
-		//case 
-
-		//case :
 
 		default:
 			break;	
 	}
+	ret = SUCCESS;
 	return ret;
 }
 
@@ -63,6 +65,7 @@ static void tcp_loop(int listenfd)
 	struct client pipe_cli = {0};
 	clients[0] = &pipe_cli;	
 	pipe_cli.fd = pipe_tcp[0];
+	struct client *cli = NULL;
 
 	for(;;)
 	{
@@ -80,6 +83,73 @@ static void tcp_loop(int listenfd)
             }
         }
         nready = ret;
+        /* new connect */
+        if(FD_ISSET(listenfd, &reset))
+        {    
+            connfd = accept(listenfd, (struct sockaddr*)&cliaddr, &clilen);
+            if(connfd < 0) 
+                continue;
+            cli = (struct client *)malloc(sizeof(struct client));
+            if(!cli)
+            {    
+                DEBUG("new connect and malloc struct client error :%s", strerror(errno));
+                continue;
+            }    
+            memset(cli, 0, sizeof(struct client));
+            cli->fd = connfd;
+            cli->data_size = HEAD_LEN;
+#ifdef _WIN32
+			ret = 1;
+    		if(ioctlsocket(connfd, FIONBIO, (u_long *)&ret) == SOCKET_ERROR)
+    		{   
+        		DEBUG("fcntl F_SETFL fail");
+    		} 
+            memcpy(cli->ip,inet_ntoa(cliaddr.sin_addr), sizeof(cli->ip));
+#else
+            ret = fcntl(connfd, F_GETFL, 0);
+            if(ret < 0) 
+            {    
+                DEBUG("fcntl connfd: %d  F_GETFL error :%s", connfd, strerror(errno));
+                close_fd(connfd);
+                free(cli);
+                continue;
+            }    
+
+            if(fcntl(connfd, F_SETFL, ret | O_NONBLOCK) < 0) 
+            {    
+                DEBUG("fcntl connfd: %d F_SETFL O_NONBLOCK error :%s", connfd, strerror(errno));
+                close_fd(connfd);
+                free(cli);
+                continue;
+            }    
+            /* recode client ip */
+            if(inet_ntop(AF_INET, &cliaddr.sin_addr, cli->ip, sizeof(cli->ip)) == NULL)
+            {    
+                DEBUG("connfd: %d inet_ntop error ",connfd, strerror(errno));
+                close_fd(connfd);
+                free(cli);
+                continue;
+            }    
+#endif
+            FD_SET(connfd, &allset);
+            for(i = 0; i < max_connections; i++)
+            {
+                if(clients[i] == NULL)
+				{
+                    clients[i] = cli;
+                	break;
+				}
+            }
+            total_connections ++;
+            if(i >= maxi)
+                maxi = i;
+            if(connfd > maxfd)
+                maxfd = connfd;
+
+            DEBUG("client index: %d total_connections: %d maxi: %d connfd ip: %s",i, total_connections, maxi, cli->ip);
+            if(--nready <= 0)
+                continue;
+        }
     
 		for(i = 0; i <= maxi; i++)
 		{
@@ -87,6 +157,7 @@ static void tcp_loop(int listenfd)
                 continue;
             if(FD_ISSET(sockfd, &reset))
             {    
+#if 0
                 if(clients[i]->has_read_head == 0)
                 {    
                     if((ret = recv(sockfd, (void *)clients[i]->head_buf + clients[i]->pos, 
@@ -178,8 +249,12 @@ static void tcp_loop(int listenfd)
                     }
                     if(clients[i]->pos == clients[i]->data_size)
                     {
-                        if(process_server_msg(clients[i]))
+						ret = process_server_msg(clients[i]);
+                        if(ret != SUCCESS)
                         {
+							if(ret == EXIT_PIPE)
+								goto run_out;
+
                             DEBUG("process msg error client index: %d ip: %s port %d",i, clients[i]->ip, clients[i]->port);
                             FD_CLR(clients[i]->fd, &allset);
                             close_client(clients[i]);
@@ -205,12 +280,41 @@ static void tcp_loop(int listenfd)
                         continue;
                     }
                 }
+#endif
+				if((ret = recv(sockfd, (void *)cli->rtsp_buf, sizeof(cli->rtsp_buf), 0)) <= 0)     
+                {    
+                    if(ret < 0) 
+                    {    
+                        if(errno == EINTR || errno == EAGAIN)
+                            continue;
+                    }    
+                    DEBUG("client close index: %d ip: %s port %d", i,
+                                clients[i]->ip, clients[i]->port);
+
+                    FD_CLR(clients[i]->fd, &allset);
+                    close_client(clients[i]);
+                    clients[i] = NULL;
+                    total_connections--;
+                    continue;
+                }    
+				cli->data_size = ret;
+				DEBUG("%s", cli->rtsp_buf);
+ 				if(rtsp_cmd_match(cli) < 0)
+				{
+				    FD_CLR(clients[i]->fd, &allset);
+                    close_client(clients[i]);
+                    clients[i] = NULL;
+                    total_connections--;
+				}
                 if(--nready <= 0)
                     break;
 			}
-
 		}
 	}
+
+run_out:
+	DEBUG("tcp loop end");
+	return ;
 }
 
 static void *thread_tcp(void *param)
@@ -276,18 +380,19 @@ int start_server()
         return ERROR;
     }   
 
-    clients = (struct client **)malloc(sizeof(struct client *) * max_connections);
-    if(!clients)
-    {   
-        DEBUG("clients malloc error %s max_connections %d", strerror(errno), max_connections);
-        return ERROR;
-    }   
 	server_s = create_tcp_server(NULL, client_port);
 	if(server_s == -1)
 	{
 		free(clients);
 		return ERROR;
 	}
+
+    clients = (struct client **)malloc(sizeof(struct client *) * max_connections);
+    if(!clients)
+    {   
+        DEBUG("clients malloc error %s max_connections %d", strerror(errno), max_connections);
+        return ERROR;
+    }   
 	
 	/* socket */	
 	ret = pthread_create(&pthread_tcp, NULL, thread_tcp, &server_s);
@@ -313,4 +418,41 @@ int start_server()
 int stop_server()
 {
 
+}
+
+int main(int argc, char *argv[])
+{
+	//init_logs();
+#if 0
+	ret = load_wsa();
+    if(SUCCESS != ret)
+    {   
+        DEBUG("load wsa error");
+		return ERROR;
+    }
+#endif
+	int ret;
+
+	ret = init_pipe();
+	if(SUCCESS != ret)
+	{
+		DEBUG("init pipe error");
+		return ERROR;
+	}
+
+	ret = init_signal();
+	if(SUCCESS != ret)
+	{
+		DEBUG("init pipe error");
+		return ERROR;
+	}
+
+	client_port = 23000;
+	window_size = 2;
+	start_server();
+	//sleep(100);
+	for(;;)
+	{
+		sleep(1);
+	}
 }

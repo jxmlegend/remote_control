@@ -30,6 +30,38 @@ int read_msg_size(unsigned char * buf)
     return *(int*)&buf[DATA_LEN_OFFSET];
 }
 
+void set_request_head(char *buf, char encrypt_flag, short cmd, int data_size)
+{
+    int ret = -1;
+    req_head *head = (req_head *)buf;
+    head->syn = 0xff;
+    head->encrypt_flag = encrypt_flag;
+    head->cmd = cmd;
+    head->data_size = data_size;
+}
+
+/* 发送数据 */
+int send_msg(const int fd, const char *buf, const int len)
+{
+    const char *tmp = buf;
+    int cnt = 0;
+    int send_cnt = 0;
+    while (send_cnt != len)
+    {   
+        cnt = send(fd, tmp + send_cnt, len - send_cnt, 0); 
+        if (cnt < 0)
+        {   
+            if (errno == EINTR || errno == EAGAIN)
+                continue;
+            return ERROR;
+        }   
+        send_cnt += cnt;
+    }   
+    return SUCCESS;
+}
+
+
+
 int create_udp_server(const char *host, const int port, struct sockaddr_in *recv_addr)
 {
     int fd = -1;

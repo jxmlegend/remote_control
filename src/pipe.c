@@ -4,6 +4,7 @@
 int pipe_tcp[2] = {0};
 int pipe_udp[2] = {0};
 int pipe_event[2] = {0};
+int pipe_ui[2] = {0};
 
 int init_pipe()
 {
@@ -52,6 +53,25 @@ int close_pipe()
     close_fd(pipe_tcp[1]);
     close_fd(pipe_udp[0]);
     close_fd(pipe_udp[1]);
+}
+
+int send_pipe(char *buf, short cmd, int size, int type)
+{
+    int ret; 
+    set_request_head(buf, 0x0, cmd, size);
+    switch(type)
+    {    
+        case PIPE_UI:
+            ret = write(pipe_ui[1], buf, size + HEAD_LEN);
+            break;
+        case PIPE_TCP:
+            ret = write(pipe_tcp[1], buf, size + HEAD_LEN);
+            break;
+        case PIPE_EVENT:
+            ret = write(pipe_event[1], buf, size + HEAD_LEN);
+            break;
+    }    
+    return ret;
 }
 
 

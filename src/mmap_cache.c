@@ -110,7 +110,7 @@ struct mmap_entry *find_name_mmap(char *fname)
 }
 
 
-#define MMAP_TEST
+//#define MMAP_TEST
 #ifdef MMAP_TEST
 int main(int argc, char *argv)
 {

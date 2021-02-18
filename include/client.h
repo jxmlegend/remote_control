@@ -3,6 +3,8 @@
 
 //#include "rbtree.h"
 
+#define IPADDR_LEN 36
+
 struct client
 {
     unsigned int status;
@@ -12,8 +14,8 @@ struct client
 
     /* tcp sock fd */
     int fd; 
-    //char ip[IPADDR_LEN];
-	int ip;
+    char ip[IPADDR_LEN];
+	//int ip;
     int port;
         
     unsigned char head_buf[HEAD_LEN + 1];
@@ -21,6 +23,9 @@ struct client
     int has_read_head ;
 
     unsigned char *data_buf;
+
+	unsigned char rtsp_buf[DATA_SIZE];
+	uint32_t rtsp_cseq;
 
     /** current data position **/
     int pos;

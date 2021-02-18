@@ -5,6 +5,30 @@ int handle_sighus;
 
 //void sigsegv(int);
 
+static void sig_quit_listen(int e)
+{
+    char s = 'S';
+	char buf[HEAD_LEN];	
+	
+	send_pipe(buf, EXIT_PIPE, 0, PIPE_TCP);
+    DEBUG("recv sig stop programe !!");
+}
+
+
+void init_signal()
+{
+#ifndef _WIN32
+    signal(SIGPIPE, SIG_IGN);
+    //signal(SIGINT, SIG_IGN);
+
+    struct sigaction act;
+    act.sa_handler = sig_quit_listen;
+    sigemptyset(&act.sa_mask);
+    act.sa_flags = 0;
+    sigaction(SIGUSR1, &act, 0); 
+#endif
+}
+
 
 void init_sem()
 {
@@ -29,6 +53,5 @@ void init_sem()
 
 	DEBUG("val %d", val);
 }
-
 
 
