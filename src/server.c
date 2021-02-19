@@ -422,6 +422,7 @@ int stop_server()
 
 }
 
+#if 1
 int main(int argc, char *argv[])
 {
 	//init_logs();
@@ -461,3 +462,4 @@ int main(int argc, char *argv[])
 	}
 #endif
 }
+#endif

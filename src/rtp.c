@@ -191,7 +191,7 @@ void build_rtp_header(RTP_header *r,  int dt)
  * ***********************************************************************/
 uint8_t nalu_buf[1448];
 
-int build_rtp_nalu(uint8_t *inbuffer, uint32_t frame_size, int sockfd)
+int build_rtp_nalu(uint8_t *inbuffer, uint32_t frame_size, int sockfd, int flags)
 {
 	/* 计算时间戳 */
     RTP_header rtp_header;
@@ -210,7 +210,15 @@ int build_rtp_nalu(uint8_t *inbuffer, uint32_t frame_size, int sockfd)
     if(!inbuffer)
         return -1;
 
-    nalu_buffer = nalu_buf;
+	int dt = 0;
+	nalu_buf[0] = 0x24;
+	nalu_buf[1] == dt == 0 ? 0x00 : 0x02;
+	//nalu_buf[0] = 0x80;
+	//nalu_buf[1] = 0xe0;
+	
+			
+
+    nalu_buffer = nalu_buf + 4;
 
     build_rtp_header(&rtp_header, 0);
 
@@ -225,7 +233,13 @@ int build_rtp_nalu(uint8_t *inbuffer, uint32_t frame_size, int sockfd)
         memcpy(nalu_buffer, &rtp_header, sizeof(rtp_header));
         memcpy(nalu_buffer + RTP_HEADER_SIZE, p_nalu_data, data_left);
 		//DEBUG("send %d", data_left + RTP_HEADER_SIZE);
-		send(sockfd, nalu_buf, data_left + RTP_HEADER_SIZE, 0);
+		if(flags) //tcp
+		{
+			*(unsigned short*)(&nalu_buf[2]) = htons(data_left + RTP_HEADER_SIZE);
+			send(sockfd, nalu_buf, data_left + RTP_HEADER_SIZE + 4, 0);
+		}
+		else
+			send(sockfd, nalu_buf + 4, data_left + RTP_HEADER_SIZE, 0);
         //usleep(DE_TIME);
         return 0;
     }
@@ -251,7 +265,6 @@ int build_rtp_nalu(uint8_t *inbuffer, uint32_t frame_size, int sockfd)
         else if(fu_end)
             fu_header |= 0x40;
 
-
         rtp_header.seq_no = htons(seq ++);
         memcpy(nalu_buffer, &rtp_header, sizeof(rtp_header));
         memcpy(nalu_buffer + 14, p_nalu_data, proc_size);
@@ -259,7 +272,14 @@ int build_rtp_nalu(uint8_t *inbuffer, uint32_t frame_size, int sockfd)
         nalu_buffer[13] = fu_header;
         //udp_write(rtp_size, cur_conn_num);
 		//DEBUG("send %d", rtp_size);
-		send(sockfd, nalu_buf, rtp_size, 0);
+		if(flags)
+		{
+			*(unsigned short*)(&nalu_buf[2]) = htons(rtp_size);
+			send(sockfd, nalu_buf, rtp_size + 4, 0);
+		}
+		else
+			send(sockfd, nalu_buf + 4, rtp_size, 0);
+			
         if(fu_end)
             usleep(36000);
 
@@ -354,7 +374,7 @@ int GetAnnexbNALU (NALU_t *nalu){
     return (pos+rewind);
 }
 
-int rtp_send_from_file(int sockfd)
+int rtp_send_from_file(int sockfd, int flags)
 {
     NALU_t *n;
     int buffersize=100000;
@@ -416,7 +436,7 @@ int rtp_send_from_file(int sockfd)
         }
         fprintf(myout,"%5d| %8d| %7s| %6s| %8d|\n",nal_num,data_offset,idc_str,type_str,n->len);
 		
-		build_rtp_nalu(n->buf, n->len, sockfd);
+		build_rtp_nalu(n->buf, n->len, sockfd, flags);
         data_offset=data_offset+data_lenth;
         nal_num++;
     }
@@ -442,18 +462,19 @@ int rtp_send_packet(const char * ip, int port, int flag)
 	DEBUG("rtp_send_packet ip %s port %d", ip, port);
 	if(flag) //tcp
 	{
-
+		//sockfd = create_udp_client("192.168.134.1", port);
+		sockfd = flag;
+		rtp_send_from_file(sockfd, 1);
 	}
 	else	//udp
 	{
-		//sockfd = create_udp_client(ip, port);
+		sockfd = create_udp_client("192.168.134.1", port);
+		rtp_send_from_file(sockfd, 0);
 	}
-	sockfd = create_udp_client("192.169.27.196", port);
 	//sockfd = create_udp_client("192.169.27."
 	//send(sockfd, "123", strlen("123"), 0);
 
 	/* file */
-	rtp_send_from_file(sockfd);
 	/* stream */
 	//rtp_send_from_stream();
 }

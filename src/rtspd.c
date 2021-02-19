@@ -167,7 +167,8 @@ int send_play_reply(struct client *cli, int code)
     strcat(cli->rtsp_buf, RTSP_EL);
 	send_msg(cli->fd, cli->rtsp_buf, strlen(cli->rtsp_buf));
 
-	rtp_send_packet(cli->host_name, cli->rtp_port, 0);
+	
+	rtp_send_packet(cli->host_name, cli->rtp_port, cli->is_tcp);
 }
 
 int rtsp_play(struct client *cli)
@@ -213,11 +214,14 @@ int send_setup_reply(struct client *cli, int code)
     strcat(cli->rtsp_buf, temp);
     strcat(cli->rtsp_buf, RTSP_EL);
     /**** unicast  ****/
-#if 1
-	if(1)
-    	strcat(cli->rtsp_buf, "Transport: RTP/AVP;unicast;client_port=");
+	if(cli->is_tcp)
+	{
+    	strcat(cli->rtsp_buf, "Transport: RTP/AVP/TCP;unicast;interleaved=0-1");
+    	strcat(cli->rtsp_buf, RTSP_EL);
+	}
 	else
-    	strcat(cli->rtsp_buf, "Transport: RTP/AVP/TCP;unicast;client_port=");
+	{
+    	strcat(cli->rtsp_buf, "Transport: RTP/AVP;unicast;client_port=");
 		
     sprintf(temp, "%d", cli->rtp_port);
     strcat(cli->rtsp_buf, temp);
@@ -235,8 +239,8 @@ int send_setup_reply(struct client *cli, int code)
     //strcat(cli->rtsp_buf,";ttl=");
     //sprintf(ttl,"%d",(int32_t)DEFAULT_TTL);
     //strcat(cli->rtsp_buf, ttl);
-#endif
     strcat(cli->rtsp_buf, RTSP_EL);
+	}
     strcat(cli->rtsp_buf, RTSP_EL);
 
 
@@ -263,8 +267,9 @@ int rtsp_setup(struct client *cli)
 	{
 		/* Not Acceptable */
 		/* tcp */
-		send_reply(406, cli);
-		return ERROR;
+		//send_reply(406, cli);
+		//return ERROR;
+		cli->is_tcp = cli->fd;
 	}
 	
 	if((p = strstr(cli->rtsp_buf, HDR_TRANSPORT)) == NULL)
@@ -324,107 +329,36 @@ char *get_sdp_version(char *buf)
 int get_describe_sdp(struct client *cli)
 {
 	char buf[30] = {0};
-#if 0	
-	memset(cli->sdp_buf, 0, sizeof(cli->sdp_buf));
-
-    strcpy(cli->sdp_buf, "v=0");
-	strcpy(cli->sdp_buf, SDP_EL);
-    strcpy(cli->sdp_buf, "o=");
-
-	DEBUG("cli->sdp_buf %s", cli->sdp_buf);
 	
-    //strcpy(cli->sdp_buf, get_SDP_user_name(s));
-    //strcpy(cli->sdp_buf, " ");
-	//DEBUG("cli->sdp_buf %s", cli->sdp_buf);
-    //strcpy(cli->sdp_buf, get_SDP_session_id(s));
-    //strcpy(cli->sdp_buf, " ");
-	//DEBUG("cli->sdp_buf %s", cli->sdp_buf);
-    //strcpy(cli->sdp_buf, get_SDP_version(s));
-    strcpy(cli->sdp_buf, SDP_EL);
-    strcpy(cli->sdp_buf, "c=");
-    strcpy(cli->sdp_buf, "IN ");        //Network type :Internal
-    strcpy(cli->sdp_buf, "IP4 ");       //Address type IP4
-    //strcpy(cli->sdp_buf, rtsp[0]->host_name);
-    strcpy(cli->sdp_buf, SDP_EL);
-    strcpy(cli->sdp_buf, "s=RTSP Session"SDP_EL);
-    //sprintf(cli->sdp_buf + strlen(cli->sdp_buf), "i=%s %s Streaming Server"SDP_EL, PACKAGE, VERSION);   
-    //sprintf(cli->sdp_buf + strlen(cli->sdp_buf), "u=%s"SDP_EL, rtsp[0]->file_name);
-    strcpy(cli->sdp_buf, "t=0 0"SDP_EL);
-    //media specific
-    strcpy(cli->sdp_buf, "m=");
-    strcpy(cli->sdp_buf, "vide 0");
-    strcpy(cli->sdp_buf, "RTP/AVP");  //Use UDP
-	DEBUG("cli->sdp_buf %s", cli->sdp_buf);
-#endif
-#if 1
-#if 0
-    strcpy(cli->sdp_buf, "v=0"SDP_EL);
-    strcpy(cli->sdp_buf, "o=");
-    strcpy(cli->sdp_buf, get_sdp_user_name(buf));
-    strcpy(cli->sdp_buf, " ");
-    strcpy(cli->sdp_buf, get_sdp_session_id(buf));
-    strcpy(cli->sdp_buf, " ");
-    strcpy(cli->sdp_buf, get_sdp_version(buf));
-    strcpy(cli->sdp_buf, SDP_EL);
-    strcpy(cli->sdp_buf, "c=");
-    strcpy(cli->sdp_buf, "IN ");        //Network type :Internal
-    strcpy(cli->sdp_buf, "IP4 ");       //Address type IP4
-    strcpy(cli->sdp_buf, cli->host_name);
-    strcpy(cli->sdp_buf, SDP_EL);
-    strcpy(cli->sdp_buf, "s=RTSP Session"SDP_EL);
-	DEBUG("%s", cli->sdp_buf);
-#endif
-#if 0
-    sprintf(cli->sdp_buf + strlen(cli->sdp_buf), "i=%s %s Streaming Server"SDP_EL, 
-			PACKAGE, VERSION);   
-    sprintf(cli->sdp_buf + strlen(cli->sdp_buf), "u=%s"SDP_EL, cli->file_name);
-#endif
-    //strcpy(cli->sdp_buf, "t=0 0"SDP_EL);
-    /* media specific */
-    strcpy(cli->sdp_buf, "m=video 0 RTP/AVP ");  //Use UDP
-	DEBUG("%s", cli->sdp_buf);
+	strcpy(cli->sdp_buf, "v=0"SDP_EL);
+	strcat(cli->sdp_buf, "o=");
+	strcat(cli->sdp_buf, get_sdp_user_name(buf));
+	strcat(cli->sdp_buf, " ");
+	strcat(cli->sdp_buf, get_sdp_session_id(buf));
+	strcat(cli->sdp_buf, " ");
+	strcat(cli->sdp_buf, get_sdp_version(buf));
+	strcat(cli->sdp_buf, SDP_EL);
+	strcat(cli->sdp_buf, "c=IN IP4 ");
+	strcat(cli->sdp_buf, cli->host_name);
+	strcat(cli->sdp_buf, SDP_EL);
+	strcat(cli->sdp_buf, "m=video 0 RTP/AVP ");
 	cli->payload_type = 96;
-	DEBUG("%s", cli->sdp_buf);
-    sprintf(cli->sdp_buf + strlen(cli->sdp_buf), "%d", cli->payload_type);
-	DEBUG("%s", cli->sdp_buf);
-    strcat(cli->sdp_buf, SDP_EL);
-	DEBUG("%s", cli->sdp_buf);
-#if 0
-	strcpy(cli->sdp_buf, "o=");
-	strcpy(cli->sdp_buf, get_sdp_user_name(buf));
-    strcpy(cli->sdp_buf, " ");
-    strcpy(cli->sdp_buf, get_sdp_session_id(buf));
-    strcpy(cli->sdp_buf, " ");
-    strcpy(cli->sdp_buf, get_sdp_version(buf));
-    strcpy(cli->sdp_buf, SDP_EL);
-#endif
-	//strcpy(cli->sdp_buf, "c=IN IP4");
-    //strcpy(cli->sdp_buf, cli->host_name);
-    //strcpy(cli->sdp_buf, SDP_EL);
+	sprintf(cli->sdp_buf + strlen(cli->sdp_buf), "%d"SDP_EL, cli->payload_type);
 
-	cli->payload_type = 96;
-    if(cli->payload_type >= 96)
-    {   
-        strcat(cli->sdp_buf, "a=rtpmap:");
-        sprintf(cli->sdp_buf + strlen(cli->sdp_buf), "%d", cli->payload_type);
-        strcat(cli->sdp_buf, " "); 
-        strcat(cli->sdp_buf, "H264");
-        strcat(cli->sdp_buf, SDP_EL);
-    	strcat(cli->sdp_buf, "a=framerate:25");
-    	strcat(cli->sdp_buf, SDP_EL);
-		strcat(cli->sdp_buf, "a=fmtp:96 packetization-mode=1;profile-level-id=4D0029;sprop-parameter-sets=R00AKZmwHgCJ+WEAAAMD6AAAdTCE,SOpDyA==");
-        strcat(cli->sdp_buf, SDP_EL);
-#if 0
-        sprintf(cli->sdp_buf + strlen(cli->sdp_buf), "rtsp://%s/%s/trackID=0", 
-				cli->host_name, cli->file_name);
-        strcat(cli->sdp_buf, SDP_EL);
-#endif
-    }       
- 	strcat(cli->sdp_buf, SDP_EL);
-
-	DEBUG("------\n %s", cli->sdp_buf);
-    return SUCCESS;
-#endif
+	if(cli->payload_type >= 96)
+	{
+		strcat(cli->sdp_buf, "a=rtpmap:");
+		sprintf(cli->sdp_buf + strlen(cli->sdp_buf), "%d ", cli->payload_type);
+		strcat(cli->sdp_buf, "H264/90000");
+		strcat(cli->sdp_buf, SDP_EL);
+		//strcat(cli->sdp_buf, "a=fmtp:96 packetization-mode=1;profile-level-id=1EE042;sprop-parameter-sets=QuAe2gLASRA=,zjCkgA==");
+		//strcat(cli->sdp_buf, SDP_EL);
+		strcat(cli->sdp_buf, "a=control:");
+		sprintf(cli->sdp_buf + strlen(cli->sdp_buf), "rtsp://%s/%s/trackID=0", cli->host_name, cli->file_name);
+		strcat(cli->sdp_buf, SDP_EL);
+	}
+	strcat(cli->sdp_buf, SDP_EL);
+	return SUCCESS;
 }
 
 void add_time_stamp(char *buf, int crlf)
