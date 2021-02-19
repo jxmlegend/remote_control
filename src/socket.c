@@ -60,6 +60,106 @@ int send_msg(const int fd, const char *buf, const int len)
     return SUCCESS;
 }
 
+/* 接收数据 */
+int recv_msg(const int fd, char *buf, const int len)
+{
+    char *tmp = buf;
+    int cnt = 0;
+    int read_cnt = 0;
+    while (read_cnt != len)
+    {
+        cnt = recv(fd, tmp + read_cnt, len - read_cnt, 0);
+        if (cnt == 0)
+        {
+            return ERROR;
+        }
+        else
+        {
+            if (cnt < 0)
+            {
+                if (errno == EINTR || errno == EAGAIN)
+                {
+                    continue;
+                }
+                return ERROR;
+            }
+        }
+        read_cnt += cnt;
+    }
+    return SUCCESS;
+}
+
+
+int create_udp_client(const char *ip, const int port)
+{
+    int fd = -1; 
+    struct sockaddr_in send_addr, recv_addr;
+    int sock_opt = 0;
+
+    fd = socket(AF_INET, SOCK_DGRAM, 0); 
+    if(INVALID_SOCKET == fd) 
+    {   
+        DEBUG("unable to create udp socket");
+        return -1; 
+    }
+
+    memset(&send_addr, 0, sizeof(struct sockaddr_in));
+    memset(&recv_addr, 0, sizeof(struct sockaddr_in));
+
+    send_addr.sin_family = AF_INET;
+    send_addr.sin_port = htons(port);
+    recv_addr.sin_family = AF_INET;
+    recv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+
+    if(NULL != ip)
+    {
+        send_addr.sin_addr.s_addr = inet_addr(ip);
+        recv_addr.sin_port = htons(0);
+
+        sock_opt = 1;
+        if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (char *)&sock_opt, sizeof(sock_opt)) < 0)
+        {
+            DEBUG("setsocksock_sock_sock_opt SO_REUSEADDR");
+        }
+
+        sock_opt = 521 * 1024; //设置为512K
+        if (setsockopt(fd, SOL_SOCKET, SO_SNDBUF, (char *)&sock_opt, sizeof(sock_opt)) == -1)
+        {
+            DEBUG("IP_MULTICAST_LOOP set fail!");
+        }
+
+        sock_opt = 512 * 1024; //设置为512K
+        if (setsockopt(fd, SOL_SOCKET, SO_RCVBUF, (char *)&sock_opt, sizeof(sock_opt)) == -1)
+        {
+            DEBUG("IP_MULTICAST_LOOP set fail!");
+        }
+    #ifdef _WIN32
+        sock_opt = 1;
+        if (ioctlsocket(fd, FIONBIO, (u_long *)&sock_opt) == SOCKET_ERROR)
+        {
+            DEBUG("fcntl F_SETFL fail");
+        }
+    #endif
+
+        /* 绑定自己的端口和IP信息到socket上 */
+        if(bind(fd, (struct sockaddr *)&recv_addr, sizeof(recv_addr)) < 0)
+        {
+            DEBUG("bind port %d error %s", port, strerror(errno));
+            goto run_out;
+        }
+
+        if(connect(fd, (struct sockaddr *)&send_addr, sizeof(send_addr)) < 0)
+        {
+            DEBUG("connect connfd : %d ip %s port %d error", fd, ip, port);
+            goto run_out;
+        }
+    }
+    return fd;
+run_out:
+    close_fd(fd);
+    return -1;
+}
+
 
 
 int create_udp_server(const char *host, const int port, struct sockaddr_in *recv_addr)

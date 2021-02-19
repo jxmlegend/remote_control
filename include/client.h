@@ -34,6 +34,7 @@ struct client
 	uint32_t ssrc;
 	uint16_t rtp_port;
 	uint16_t rtcp_port;
+	uint8_t nalu_buffer[1448];
 
 
 

@@ -140,6 +140,8 @@ static void tcp_loop(int listenfd)
                 	break;
 				}
             }
+
+			cli->session_id = i;
             total_connections ++;
             if(i >= maxi)
                 maxi = i;
@@ -431,6 +433,8 @@ int main(int argc, char *argv[])
 		return ERROR;
     }
 #endif
+	//rtp_send_packet(NULL, 23000, 0);	
+#if 1
 	int ret;
 
 	ret = init_pipe();
@@ -455,4 +459,5 @@ int main(int argc, char *argv[])
 	{
 		sleep(1);
 	}
+#endif
 }

@@ -73,6 +73,7 @@
 #define ERROR 1
 
 #define DATA_SIZE 1452
+#define READ_LEN 150000
 
 #define SCHED_PRIORITY_ENCODE 1
 #define SCHED_PRIORITY_DECODE 1

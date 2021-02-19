@@ -39,7 +39,7 @@ qtobj = qt_window
 libobj = libScreenCast.dll.a
 
 mainobj = main.o socket.o frame.o packet.o version.o audio.o video.o avi_enc.o log.o crc.o rtspd.o rtp.o rtcp.o \
-		mmap_cache.o alarm.o signals.o list.o dll.o pipe.o ffmpeg.o sdl.o client.o h264.o server.o
+		mmap_cache.o alarm.o signals.o list.o dll.o pipe.o ffmpeg.o sdl.o client.o h264.o server.o tools.o
 
 cppobj = 
 
