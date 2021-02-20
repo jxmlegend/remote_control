@@ -1,5 +1,6 @@
 #include "base.h"
 #include "socket.h"
+#include "client.h"
 
 int max_connections = 0;
 
@@ -52,15 +53,34 @@ int read_msg_size(unsigned char * buf)
     return *(int*)&buf[DATA_LEN_OFFSET];
 }
 
+
 void set_request_head(char *buf, char encrypt_flag, short cmd, int data_size)
 {
-    int ret = -1;
+    if(!buf)
+        return;
     req_head *head = (req_head *)buf;
     head->syn = 0xff;
     head->encrypt_flag = encrypt_flag;
-    head->cmd = cmd;
+    head->cmd = cmd; 
     head->data_size = data_size;
 }
+
+/* 发送请求 */
+int send_request(struct client *cli)
+{
+    int ret;
+    if(!cli || !cli->fd)
+        return ERROR;
+
+    ret = send_msg(cli->fd, cli->head_buf, HEAD_LEN);
+    if(cli->data_buf && cli->data_size)
+	{
+        ret = send_msg(cli->fd, cli->data_buf, cli->data_size);
+		free(cli->data_buf);	
+	}
+    return ret; 
+}
+
 
 /* 发送数据 */
 int send_msg(const int fd, const char *buf, const int len)

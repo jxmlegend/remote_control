@@ -10,20 +10,20 @@ void *thread_ffmpeg_video_encode(void *param);
 
 struct client m_client;
 
-static void exit_client()
+void exit_client()
 {
+    void *tret = NULL;
 
+    pthread_join(pthread_tcp, &tret);  //等待线程同步
+    DEBUG("pthread_exit %d tcp", (int)tret);
 }
 
 static int recv_done(struct client *cli)
 {   
-    if(cli->status == CONTROL)
-    {   
-        //sem --;
-    }
+
 }
 
-static int send_done(struct client *cli)
+int send_done(struct client *cli)
 {   
     cli->status = READY;
 }
@@ -31,6 +31,7 @@ static int send_done(struct client *cli)
 static int send_control(struct client *cli)
 {   
     cli->status = PLAY;
+	//rfb_format();
 }
 
 static int recv_control(struct client *cli)
@@ -47,52 +48,78 @@ static int send_play(struct client *cli)
 static int recv_play(struct client *cli)
 {   
     if(cli->status != READY)
-        return ERROR;
-}
-
-static int send_options(struct client *cli)
-{   
-    cli->status = READY;
-    // -> video 
-    // -> control 
+	{
+		//pthread_cancel();
+		send_done();	
+	}
 }
 
 static int recv_options(struct client *cli)
 {
-    if(cli->status != OPTIONS)
-        return ERROR;
-
-    cli->status = READY;
+#if 0
+	struct request *req = (struct request *)cli->data_buf;
+	if(req->code == 200)
+	{
+		//return send_options(cli);	
+		cli->status = READY;
+		return SUCCESS;
+	}
+	else
+	{
+		DEBUG("login error code %d msg %s", req->code, req->msg);
+		return ERROR;
+	}
+#endif
 }
 
-static int send_login(struct client *cli)
-{
-    cli->status = OPTIONS;
+static int send_options(struct client *cli)
+{   
+#if 0
+	/* video format audio format ffmpeg code option yuv rgb width, height  */
+	//rfb_format *format = 
+	int client_major = 0, client_minor = 0;
+    get_version(&client_major, &client_minor);
+	
+	cli->data_size = SZ_VERFORMAT;
+	cli->data_buf = (unsigned char *)malloc(cli->data_size + 1);
+	if(!cli->data_buf)
+		return ERROR;	
+
+	sprintf(cli->data_buf, VERSIONFORMAT, client_major, client_minor);
+   	set_request_head(cli->head_buf, 0, LOGIN_MSG, cli->data_size);
+    return send_request(cli);
+#endif
 }
 
 static int recv_login(struct client *cli)
 {
-    int ret;
-    int server_major = 0, server_minor = 0;
-    int client_major = 0, client_minor = 0;
-
-    get_version(&server_major, &server_minor);
-    //sscanf(cli->data_buf, VERSIONFORMAT, &client_major, &client_minor);
-    if(server_major == client_major && server_minor == client_minor)
-    {
-        ret = send_login(cli);
-    }
-    else
-    {
-        ret = ERROR;
-#if 0
-        DEBUG("version server"VERSIONFORMAT" client"VERSIONFORMAT "error", server_major, server_minor, 
-                client_major, client_minor);
-#endif
-    }
-    return ret;
+	struct request *req = (struct request *)cli->data_buf;
+	if(req->code == 200)
+	{
+		free(cli->data_buf);
+		return send_options(cli);	
+	}
+	else
+	{
+		DEBUG("login error code %d msg %s", req->code, req->msg);
+		return ERROR;
+	}
 }
 
+static int send_login(struct client *cli)
+{
+	int client_major = 0, client_minor = 0;
+    get_version(&client_major, &client_minor);
+	
+	cli->data_size = SZ_VERFORMAT;
+	cli->data_buf = (unsigned char *)malloc(cli->data_size + 1);
+	if(!cli->data_buf)
+		return ERROR;	
+
+	sprintf(cli->data_buf, VERSIONFORMAT, client_major, client_minor);
+   	set_request_head(cli->head_buf, 0, LOGIN_MSG, cli->data_size);
+    return send_request(cli);
+}
 
 int process_client_msg(struct client *cli)
 {
@@ -289,15 +316,14 @@ static void *thread_tcp(void *param)
 int init_client()
 {
 	int ret;
-
-	server_s = create_tcp_client("", 9999);
+	server_s = create_tcp_client(server_ip, server_port);
 	if(server_s == -1)
 	{
-		DEBUG("");
+		DEBUG("connect server ip %s port %d error", server_ip, server_port);
 		return ERROR;
 	}
 
-	ret = pthread_create(pthread_tcp, NULL, thread_tcp, &server_s);
+	ret = pthread_create(&pthread_tcp, NULL, thread_tcp, &server_s);
 	if(SUCCESS != ret)
 	{
 		close_fd(server_s);
@@ -309,6 +335,6 @@ int init_client()
 		close_fd(server_s);
 		return ERROR;
 	}
-
+	
 	return SUCCESS;
 }

@@ -1,0 +1,41 @@
+[20/Feb/2021:12:34:23 +0000] :File: ./src/configs.c, Line: 00050:  
+programe client: 
+ server_ip 192.168.134.137, server_port 22000, window_flag 1, default_fps 12
+[20/Feb/2021:12:34:25 +0000] :File: ./src/sdl.c, Line: 00076:  XOpenDisplay error
+[20/Feb/2021:12:34:26 +0000] :File: ./src/sdl.c, Line: 00368:  Could not initialize SDL - No available video device
+[20/Feb/2021:12:34:26 +0000] :File: ./src/main.c, Line: 00101:  init SDL error ret:1
+[20/Feb/2021:12:34:48 +0000] :File: ./src/configs.c, Line: 00050:  
+programe client: 
+ server_ip 192.168.134.137, server_port 22000, window_flag 1, default_fps 12
+[20/Feb/2021:12:34:48 +0000] :File: ./src/sdl.c, Line: 00379:  SDL_ttf open ttf dir: ./font/msyh.ttf error
+[20/Feb/2021:12:34:48 +0000] :File: ./src/main.c, Line: 00112:  init client
+[20/Feb/2021:12:34:48 +0000] :File: ./src/socket.c, Line: 00420:  connection failed reconnection after 1 seconds
+[20/Feb/2021:12:34:53 +0000] :File: ./src/configs.c, Line: 00050:  
+programe client: 
+ server_ip 192.168.134.137, server_port 22000, window_flag 1, default_fps 12
+[20/Feb/2021:12:34:54 +0000] :File: ./src/sdl.c, Line: 00379:  SDL_ttf open ttf dir: ./font/msyh.ttf error
+[20/Feb/2021:12:34:54 +0000] :File: ./src/main.c, Line: 00112:  init client
+[20/Feb/2021:12:34:54 +0000] :File: ./src/socket.c, Line: 00420:  connection failed reconnection after 1 seconds
+[20/Feb/2021:12:36:02 +0000] :File: ./src/configs.c, Line: 00050:  
+programe client: 
+ server_ip 192.168.134.137, server_port 22000, window_flag 1, default_fps 12
+[20/Feb/2021:12:36:02 +0000] :File: ./src/sdl.c, Line: 00379:  SDL_ttf open ttf dir: ./font/msyh.ttf error
+[20/Feb/2021:12:36:02 +0000] :File: ./src/main.c, Line: 00112:  init client
+[20/Feb/2021:12:36:02 +0000] :File: ./src/socket.c, Line: 00420:  connection failed reconnection after 1 seconds
+[20/Feb/2021:12:36:03 +0000] :File: ./src/sdl.c, Line: 00064:  SDL_WasInit
+[20/Feb/2021:12:36:03 +0000] :File: ./src/client.c, Line: 00181:  close fd 15
+[20/Feb/2021:12:39:45 +0000] :File: ./src/configs.c, Line: 00050:  
+programe client: 
+ server_ip 192.168.134.137, server_port 22000, window_flag 1, default_fps 12
+[20/Feb/2021:12:39:45 +0000] :File: ./src/sdl.c, Line: 00379:  SDL_ttf open ttf dir: ./font/msyh.ttf error
+[20/Feb/2021:12:39:45 +0000] :File: ./src/main.c, Line: 00112:  init client
+[20/Feb/2021:12:39:45 +0000] :File: ./src/socket.c, Line: 00420:  connection failed reconnection after 1 seconds
+[20/Feb/2021:12:39:46 +0000] :File: ./src/client.c, Line: 00184:  close fd 15
+[20/Feb/2021:12:39:46 +0000] :File: ./src/client.c, Line: 00018:  pthread_exit 0 tcp
+[20/Feb/2021:12:39:46 +0000] :File: ./src/sdl.c, Line: 00064:  SDL_WasInit
+[20/Feb/2021:12:41:37 +0000] :File: ./src/configs.c, Line: 00050:  
+programe client: 
+ server_ip 192.168.134.137, server_port 22000, window_flag 1, default_fps 12
+[20/Feb/2021:12:41:37 +0000] :File: ./src/sdl.c, Line: 00379:  SDL_ttf open ttf dir: ./font/msyh.ttf error
+[20/Feb/2021:12:41:37 +0000] :File: ./src/main.c, Line: 00112:  init client
+[20/Feb/2021:12:41:37 +0000] :File: ./src/socket.c, Line: 00420:  connection failed reconnection after 1 seconds

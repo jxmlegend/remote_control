@@ -98,6 +98,10 @@
 #define BSWAP_32(x) ((BSWAP_16(x) << 16) | BSWAP_16((x) >> 16))
 #define BSWAP_64(x) ((BSWAP_32(x) << 32) | BSWAP_32((x) >> 32))
 
+#define SZ_VERFORMAT 20
+#define VERSIONFORMAT "RFB %03d.%03d"
+
+
 #ifndef __cplusplus
 #define max(a,b)    (((a) > (b)) ? (a) : (b))
 #define min(a,b)    (((a) < (b)) ? (a) : (b))

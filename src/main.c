@@ -21,7 +21,7 @@ static void do_exit()
 	}
 	else
 	{
-		//exit_client();
+		exit_client();
 	}
 }
 

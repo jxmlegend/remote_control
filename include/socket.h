@@ -35,4 +35,14 @@ enum MSG_TYPE{
 };
 
 
+struct request
+{
+	int code;
+	union
+	{
+		unsigned char msg[36];
+		unsigned int type;
+	}
+};
+
 #endif

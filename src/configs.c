@@ -28,7 +28,6 @@ void init_configs()
     {    
          server_flag = 0;
     }
-	server_flag = 1;
     if(server_flag)     //服务端程序
     {   
         client_port = read_profile_int(SERVER_SECTION, SERVER_CLIENT_PORT_KEY, DEFAULT_CLIENT_PORT_VALUE, CONFIG_FILE);

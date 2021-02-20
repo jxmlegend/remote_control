@@ -6,8 +6,3 @@ void get_version(int *major, int *minor)
     *minor = 0;
 }
 
-
-void get_about()
-{
-
-}

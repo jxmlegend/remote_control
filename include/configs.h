@@ -48,6 +48,8 @@
 
 extern int server_flag;
 extern int window_flag;
+extern char *server_ip;
+extern int server_port;
 extern const char program_name[];
 
 #endif
