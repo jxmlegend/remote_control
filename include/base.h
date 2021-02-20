@@ -40,25 +40,26 @@
 	#include <setjmp.h>
 #endif
 
+#include "configs.h"
 #include "socket.h"
 #include "global.h"
 
-            //log_msg("File: "__FILE__", Line: %05d:  " format"\r\n", __LINE__, ##__VA_ARGS__); \
-            err_msg("File: "__FILE__", Line: %05d:  " format"\r\n", __LINE__, ##__VA_ARGS__); \
-            err_msg("File: "__FILE__", Line: %05d:  " format"\r\n", __LINE__, ##__VA_ARGS__); \
 
 #define __DEBUG__
 #ifdef __DEBUG__
 #define DEBUG(format,...) \
         do { printf("File: "__FILE__", Line: %05d: " format"\r\n", __LINE__, ##__VA_ARGS__); \
+        	log_msg("File: "__FILE__", Line: %05d:  " format"\r\n", __LINE__, ##__VA_ARGS__); \
         }while(0)
 
 #define FAIL(format,...) \
         do { printf("File: "__FILE__", Line: %05d: " format"\r\n", __LINE__, ##__VA_ARGS__); \
+            err_msg("File: "__FILE__", Line: %05d:  " format"\r\n", __LINE__, ##__VA_ARGS__); \
         }while(0)
  
 #define DIE(format,...) \
         do { printf("File: "__FILE__", Line: %05d: " format"\r\n", __LINE__, ##__VA_ARGS__); \
+            err_msg("File: "__FILE__", Line: %05d:  " format"\r\n", __LINE__, ##__VA_ARGS__); \
             pthread_exit((void *)ERROR); \
         }while(0)
 #else
@@ -71,6 +72,9 @@
 /* base */
 #define SUCCESS 0
 #define ERROR 1
+
+#define MAX_FILENAMELEN 128
+#define MAX_BUFLEN 1024 * 1024
 
 #define DATA_SIZE 1452
 #define READ_LEN 150000
@@ -87,6 +91,17 @@
 #define DATA_ORDER_OFFSET 2
 #define DATA_LEN_OFFSET 4
 
+#define STRPREFIX(a,b) (strncmp((a),(b),strlen((b))) == 0)
+
+#define BSWAP_8(x) ((x) & 0xff)
+#define BSWAP_16(x) ((BSWAP_8(x) << 8) | BSWAP_8((x) >> 8))
+#define BSWAP_32(x) ((BSWAP_16(x) << 16) | BSWAP_16((x) >> 16))
+#define BSWAP_64(x) ((BSWAP_32(x) << 32) | BSWAP_32((x) >> 32))
+
+#ifndef __cplusplus
+#define max(a,b)    (((a) > (b)) ? (a) : (b))
+#define min(a,b)    (((a) < (b)) ? (a) : (b))
+#endif
 
 
 #endif

@@ -27,8 +27,11 @@ enum MSG_TYPE{
 	EXIT_PIPE = 2,
 
 	/* socket */
-		
-
+	LOGIN_MSG,
+	OPTIONS_MSG,
+	PLAY_MSG,
+	CONTROL_MSG,
+	DONE_MSG,
 };
 
 

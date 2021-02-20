@@ -1,12 +1,12 @@
 #ifndef __GLOBAL_H__
 #define __GLOBAL_H__
 
-
+extern time_t current_time;
 extern int client_port;
 extern int window_size;
 extern int max_connections;
 
-void *thread_event(void *param);
+void *thread_sdl(void *param);
 
 
 extern int pipe_tcp[2];

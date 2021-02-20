@@ -1,48 +1,7 @@
 #include <SDL2/SDL.h>
-#include <libavcodec/avcodec.h>
-#include <libavformat/avformat.h>
-#include <libswscale/swscale.h>
-#include <libavutil/pixfmt.h>
-#include <libavutil/pixdesc.h>
-#include <libavutil/opt.h>
-#include <libavutil/imgutils.h>
-#include <libswscale/swscale.h>
-
 #include "base.h"
+#include "frame.h"
 
-#define FRAME_QUEUE_SIZE 16
-
-typedef struct Frame
-{
-    AVFrame *frame;
-    AVSubtitle sub;
-    int serial;
-    double pts;
-    double duration;
-    int64_t pos;
-    int width;
-    int height;
-    int format;
-    AVRational sar;
-    int uploaded;
-    int flip_v;
-}Frame;
-
-typedef struct FrameQueue
-{
-    Frame queue[FRAME_QUEUE_SIZE];
-
-    int rindex;
-    int windex;
-
-    int size;
-    int max_size;
-    //int keep_last;
-
-    int rindex_shown;
-    SDL_mutex *mutex;
-    SDL_cond *cond;
-} FrameQueue;
 
 /* 获取一个可写的Frame写入 */
 static Frame *frame_queue_peek_writable(FrameQueue *f)
@@ -122,7 +81,7 @@ static void frame_queue_signal(FrameQueue *f)
 }
 
 /* 出当前的。因为f->rindex + f->rindex_shown可能会超过max_size,所以用了取余 */
-static Frame *frame_queue_peek(FrameQueue *f)
+Frame *frame_queue_peek(FrameQueue *f)
 {
     return &f->queue[(f->rindex + f->rindex_shown) % f->max_size];
 }
@@ -153,7 +112,7 @@ static Frame *frame_queue_peek_readable(FrameQueue *f)
     return &f->queue[(f->rindex + f->rindex_shown) % f->max_size];
 }
 
-static void frame_queue_pop(FrameQueue *f)
+void frame_queue_pop(FrameQueue *f)
 {
     if(!f->rindex_shown)
     {
@@ -171,7 +130,7 @@ static void frame_queue_pop(FrameQueue *f)
 }
 
 /* 返回还未显示的数量 */
-static int frame_queue_nb_remaining(FrameQueue *f)
+int frame_queue_nb_remaining(FrameQueue *f)
 {
     return f->size - f->rindex_shown;
 }

@@ -51,6 +51,5 @@ struct client
 
 
 
-
 #endif //__CLIENT_H__ 
 

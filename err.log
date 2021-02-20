@@ -1,60 +1,62 @@
-In file included from ./src/rtp.c:1:0:
-./include/base.h:46:13: warning: multi-line comment [-Wcomment]
-             //log_msg("File: "__FILE__", Line: %05d:  " format"\r\n", __LINE__, ##__VA_ARGS__); \
-             ^
-./src/rtp.c: In function ‘get_timestamp’:
-./src/rtp.c:74:2: warning: implicit declaration of function ‘gettimeofday’ [-Wimplicit-function-declaration]
-  gettimeofday(&tv, NULL);
-  ^
-./src/rtp.c: In function ‘build_rtp_nalu’:
-./src/rtp.c:242:13: warning: unused variable ‘time_delay’ [-Wunused-variable]
-     int32_t time_delay;
-             ^
-./src/rtp.c: In function ‘rtp_send_from_file’:
-./src/rtp.c:422:14: warning: implicit declaration of function ‘get_file_size’ [-Wimplicit-function-declaration]
-  file_size = get_file_size(fp);
-              ^
-./src/rtp.c:456:7: error: ‘info’ undeclared (first use in this function)
-   if(!info)
-       ^
-./src/rtp.c:456:7: note: each undeclared identifier is reported only once for each function it appears in
-./src/rtp.c:476:3: error: ‘is_running’ undeclared (first use in this function)
-   is_running = 1;
-   ^
-./src/rtp.c:484:5: warning: ‘return’ with no value, in function returning non-void
-     return;
+In file included from ./src/client.c:1:0:
+./include/base.h:76:0: warning: "MAX_FILENAMELEN" redefined
+ #define MAX_FILENAMELEN 128
+ ^
+In file included from ./include/base.h:43:0,
+                 from ./src/client.c:1:
+./include/configs.h:14:0: note: this is the location of the previous definition
+ #define MAX_FILENAMELEN 256
+ ^
+./src/client.c: In function ‘tcp_loop’:
+./src/client.c:35:31: error: ‘m_client’ undeclared (first use in this function)
+     struct client *current = &m_client;
+                               ^
+./src/client.c:35:31: note: each undeclared identifier is reported only once for each function it appears in
+In file included from ./src/client.c:1:0:
+./include/base.h:52:10: warning: implicit declaration of function ‘log_msg’ [-Wimplicit-function-declaration]
+          log_msg("File: "__FILE__", Line: %05d:  " format"\r\n", __LINE__, ##__VA_ARGS__); \
+          ^
+./src/client.c:38:5: note: in expansion of macro ‘DEBUG’
+     DEBUG("sockfd %d maxfd %d", sockfd, maxfd);
      ^
-./src/rtp.c:412:6: warning: unused variable ‘last_nalu’ [-Wunused-variable]
-  int last_nalu = 0;
-      ^
-./src/rtp.c:411:6: warning: unused variable ‘found_nalu’ [-Wunused-variable]
-  int found_nalu = 0;
-      ^
-./src/rtp.c:410:11: warning: unused variable ‘p’ [-Wunused-variable]
-  uint8_t *p = NULL;
+./src/client.c:72:20: warning: implicit declaration of function ‘read_msg_syn’ [-Wimplicit-function-declaration]
+                 if(read_msg_syn(current->head_buf) != DATA_SYN)
+                    ^
+./src/client.c:80:38: warning: implicit declaration of function ‘read_msg_size’ [-Wimplicit-function-declaration]
+                 current->data_size = read_msg_size(current->head_buf);
+                                      ^
+./src/client.c:118:24: warning: implicit declaration of function ‘process_client_msg’ [-Wimplicit-function-declaration]
+                     if(process_client_msg(current))
+                        ^
+./src/client.c:36:10: warning: unused variable ‘stop’ [-Wunused-variable]
+     char stop = 'S'; 
+          ^
+./src/client.c:33:11: warning: unused variable ‘tmp’ [-Wunused-variable]
+     char *tmp = &buf[HEAD_LEN];
            ^
-./src/rtp.c:409:28: warning: unused variable ‘out_buf’ [-Wunused-variable]
-  uint8_t in_buf[READ_LEN], out_buf[READ_LEN];
-                            ^
-./src/rtp.c:408:6: warning: unused variable ‘is_runing’ [-Wunused-variable]
-  int is_runing = 1;
-      ^
-./src/rtp.c:407:11: warning: unused variable ‘frame_size’ [-Wunused-variable]
-  uint32_t frame_size;
-           ^
-./src/rtp.c:406:11: warning: unused variable ‘bytes_left’ [-Wunused-variable]
-  uint32_t bytes_left;
-           ^
-./src/rtp.c: In function ‘rtp_send_packet’:
-./src/rtp.c:514:11: warning: implicit declaration of function ‘create_udp_client’ [-Wimplicit-function-declaration]
-  sockfd = create_udp_client("192.169.27.196", port);
-           ^
-./src/rtp.c: In function ‘rtp_send_from_stream’:
-./src/rtp.c:500:1: warning: control reaches end of non-void function [-Wreturn-type]
- }
- ^
-./src/rtp.c: In function ‘rtp_send_packet’:
-./src/rtp.c:522:1: warning: control reaches end of non-void function [-Wreturn-type]
- }
- ^
-make: *** [rtp.o] Error 1
+./src/client.c:18:25: warning: unused variable ‘maxi’ [-Wunused-variable]
+     int nready, ret, i, maxi = 0;
+                         ^
+./src/client.c:18:22: warning: unused variable ‘i’ [-Wunused-variable]
+     int nready, ret, i, maxi = 0;
+                      ^
+./src/client.c: In function ‘init_client’:
+./src/client.c:178:13: warning: implicit declaration of function ‘create_tcp_client’ [-Wimplicit-function-declaration]
+  server_s = create_tcp_client("", 9999);
+             ^
+./src/client.c:185:23: warning: passing argument 1 of ‘pthread_create’ makes pointer from integer without a cast [-Wint-conversion]
+  ret = pthread_create(pthread_tcp, NULL, thread_tcp, &server_s);
+                       ^
+In file included from ./include/base.h:10:0,
+                 from ./src/client.c:1:
+/usr/include/pthread.h:233:12: note: expected ‘pthread_t * restrict {aka long unsigned int * restrict}’ but argument is of type ‘pthread_t {aka long unsigned int}’
+ extern int pthread_create (pthread_t *__restrict __newthread,
+            ^
+./src/client.c:188:3: warning: implicit declaration of function ‘close_fd’ [-Wimplicit-function-declaration]
+   close_fd(server_s);
+   ^
+./src/client.c: At top level:
+./src/client.c:10:13: warning: ‘exit_client’ defined but not used [-Wunused-function]
+ static void exit_client()
+             ^
+make: *** [client.o] Error 1

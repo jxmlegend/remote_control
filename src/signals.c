@@ -15,7 +15,7 @@ static void sig_quit_listen(int e)
 }
 
 
-void init_signal()
+void init_signals()
 {
 #ifndef _WIN32
     signal(SIGPIPE, SIG_IGN);

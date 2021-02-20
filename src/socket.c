@@ -15,6 +15,28 @@ void close_fd(int fd)
     }
 }
 
+int load_wsa()
+{
+#ifdef _WIN32
+    WSADATA wsData = {0}; 
+    if(0 != WSAStartup(0x202, &wsData))
+    {    
+        DEBUG("WSAStartup  fail");
+        WSACleanup();
+        return ERROR;
+    }    
+#endif
+    return SUCCESS;
+}
+
+void unload_wsa()
+{
+#ifdef _WIN32
+    WSACleanup();
+#endif
+}
+
+
 unsigned char read_msg_syn(unsigned char* buf) 
 {
     return *(unsigned char*)&buf[DATA_SYN_OFFSET];
