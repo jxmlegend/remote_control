@@ -17,56 +17,24 @@ void exit_server()
     DEBUG("pthread_exit %d tcp", (int)tret);
 }
 
-int convert_mode(int mode)
-{
 
-}
+static int recv_play(struct client *cli)
+{   
 
-void close_client(struct client *cli)
-{
-	//close_fd(cli->fd);
-}
-
-static int recv_done(struct client *cli)
-{
-	if(cli->status == CONTROL)
-	{
-		//sem --;
-	}
-}
-
-static int send_done(struct client *cli)
-{
-	cli->status = READY;
-}
-
-static int send_control(struct client *cli)
-{
-	cli->status = PLAY;
-}
-
-static int recv_control(struct client *cli)
-{
-	if(cli->status != READY)
-		return ERROR;
 }
 
 static int send_play(struct client *cli)
 {
-	cli->status = PLAY;
-}
 
-static int recv_play(struct client *cli)
-{
-	if(cli->status != READY)
-		return ERROR;
 }
 
 static int send_options(struct client *cli)
 {
-	cli->status = READY;
-	// -> video 
-	// -> control 
+	int free_chn = rtspd_freechn();
+	if(free_chn == -1)
+	{
+
+	}
 }
 
 static int recv_options(struct client *cli)
@@ -74,42 +42,46 @@ static int recv_options(struct client *cli)
 	if(cli->status != OPTIONS)
 		return ERROR;
 	
-	cli->status = READY;
+	rtp_format *fmt = (rtp_format *)cli->recv_buf;
+	memcpy(&cli->fmt, fmt, sizeof(rtp_format));
+	return send_options(cli);	
 }
 
 static int send_login(struct client *cli)
 {
+	cli->send_size = sizeof(struct request) + 1;
+	cli->send_buf = (unsigned char *)malloc(cli->send_size);
+
+	if(!cli->send_buf)
+		return ERROR;
+
+	struct request *req = (struct request *)cli->send_buf;
+	
+	req->code = 200;
 	cli->status = OPTIONS;
+	set_request_head(cli->send_head, 0, LOGIN_MSG, cli->send_size);
+	return send_request(cli);
 }
 
 static int recv_login(struct client *cli)
 {
-	int ret;
    	int server_major = 0, server_minor = 0;
     int client_major = 0, client_minor = 0;
 	
 	get_version(&server_major, &server_minor);
-	//sscanf(cli->data_buf, VERSIONFORMAT, &client_major, &client_minor);
+	sscanf(cli->recv_buf, VERSIONFORMAT, &client_major, &client_minor);
 	if(server_major == client_major && server_minor == client_minor)
 	{
-		ret = send_login(cli);
+		return send_login(cli);
 	}
-	else
-	{
-		ret = ERROR;
-#if 0
-		DEBUG("version server"VERSIONFORMAT" client"VERSIONFORMAT "error", server_major, server_minor, 
-				client_major, client_minor);
-#endif
-	}
-	return ret;
+	return ERROR;
 }
 
 int process_server_msg(struct client *cli)
 {
 	int ret;
-	DEBUG("read_msg_order(cli->head_buf) %d", read_msg_order(cli->head_buf));
-	switch(read_msg_order(cli->head_buf))
+	DEBUG("read_msg_order(cli->recv_head) %d", read_msg_order(cli->recv_head));
+	switch(read_msg_order(cli->recv_head))
 	{
 		/* pipe msg */
 		case EXIT_PIPE:
@@ -119,16 +91,16 @@ int process_server_msg(struct client *cli)
 			ret = recv_login(cli);
 			break;
 		case OPTIONS_MSG:
-			ret = recv_login(cli);
+			ret = recv_options(cli);
 			break;
 		case PLAY_MSG:
-			ret = recv_login(cli);
+			ret = recv_play(cli);
 			break;
 		case CONTROL_MSG:
-			ret = recv_login(cli);
+			ret = recv_control(cli);
 			break;
 		case DONE_MSG:
-			ret = recv_login(cli);
+			ret = recv_done(cli);
 			break;
 		default:
 			break;	
@@ -162,6 +134,7 @@ static void tcp_loop(int listenfd)
 	clients[0] = &pipe_cli;	
 	pipe_cli.fd = pipe_tcp[0];
 	struct client *cli = NULL;
+	time_t last_time = current_time;
 
 	for(;;)
 	{
@@ -179,6 +152,13 @@ static void tcp_loop(int listenfd)
             }
         }
         nready = ret;
+
+	   	(void)time(&current_time);
+        if(current_time - last_time >= TIME_OUT)
+        {   
+            last_time = current_time;
+        } 
+	
         /* new connect */
         if(FD_ISSET(listenfd, &reset))
         {    
@@ -193,7 +173,7 @@ static void tcp_loop(int listenfd)
             }    
             memset(cli, 0, sizeof(struct client));
             cli->fd = connfd;
-            cli->data_size = HEAD_LEN;
+            cli->recv_size = HEAD_LEN;
 #ifdef _WIN32
 			ret = 1;
     		if(ioctlsocket(connfd, FIONBIO, (u_long *)&ret) == SOCKET_ERROR)
@@ -256,7 +236,7 @@ static void tcp_loop(int listenfd)
             {    
                 if(clients[i]->has_read_head == 0)
                 {    
-                    if((ret = recv(sockfd, (void *)clients[i]->head_buf + clients[i]->pos, 
+                    if((ret = recv(sockfd, (void *)clients[i]->recv_head + clients[i]->pos, 
                                         HEAD_LEN-clients[i]->pos, 0)) <= 0)     
                     {    
                         if(ret < 0) 
@@ -277,10 +257,10 @@ static void tcp_loop(int listenfd)
                     if(clients[i]->pos != HEAD_LEN)
                         continue;
      
-                    if(read_msg_syn(clients[i]->head_buf) != DATA_SYN)
+                    if(read_msg_syn(clients[i]->recv_head) != DATA_SYN)
                     {    
                         DEBUG(" %02X client send SYN flag error close client index: %d ip: %s port %d", 
-                            read_msg_syn(clients[i]->head_buf), i, clients[i]->ip, 
+                            read_msg_syn(clients[i]->recv_head), i, clients[i]->ip, 
                             clients[i]->port);
                         FD_CLR(clients[i]->fd, &allset);
                         close_client(clients[i]);
@@ -289,12 +269,12 @@ static void tcp_loop(int listenfd)
                         continue;
                     }    
                     clients[i]->has_read_head = 1; 
-                    clients[i]->data_size = read_msg_size(clients[i]->head_buf);
+                    clients[i]->recv_size = read_msg_size(clients[i]->recv_head);
                     clients[i]->pos = 0; 
-                    if(clients[i]->data_size >= 0 && clients[i]->data_size < CLIENT_BUF)
+                    if(clients[i]->recv_size >= 0 && clients[i]->recv_size < CLIENT_BUF)
                     {    
-                        clients[i]->data_buf = (unsigned char*)malloc(clients[i]->data_size + 1);
-                        if(!clients[i]->data_buf)
+                        clients[i]->recv_buf = (unsigned char*)malloc(clients[i]->recv_size + 1);
+                        if(!clients[i]->recv_buf)
                         {    
                             DEBUG("malloc data buf error: %s close client index: %d ip: %s port %d",
                                     strerror(errno), i, clients[i]->ip, clients[i]->port);
@@ -304,12 +284,11 @@ static void tcp_loop(int listenfd)
                             total_connections--;
                             continue;
                         }
-                        memset(clients[i]->data_buf, 0, clients[i]->data_size);
                     }
                     else
                     {
                         DEBUG("client send size: %d error close client index: %d ip: %s port %d",
-                                clients[i]->data_size, i, clients[i]->ip, clients[i]->port);
+                                clients[i]->recv_size, i, clients[i]->ip, clients[i]->port);
                         FD_CLR(clients[i]->fd, &allset);
                         close_client(clients[i]);
                         clients[i] = NULL;
@@ -319,10 +298,10 @@ static void tcp_loop(int listenfd)
                 }
                 if(clients[i]->has_read_head == 1)
                 {
-                    if(clients[i]->pos < clients[i]->data_size)
+                    if(clients[i]->pos < clients[i]->recv_size)
                     {
-                        if((ret = recv(sockfd,clients[i]->data_buf+clients[i]->pos,
-                                        clients[i]->data_size - clients[i]->pos,0)) <= 0)
+                        if((ret = recv(sockfd,clients[i]->recv_buf+clients[i]->pos,
+                                        clients[i]->recv_size - clients[i]->pos,0)) <= 0)
                         {
                             if(ret < 0)
                             {
@@ -338,7 +317,7 @@ static void tcp_loop(int listenfd)
                         }
                         clients[i]->pos += ret;
                     }
-                    if(clients[i]->pos == clients[i]->data_size)
+                    if(clients[i]->pos == clients[i]->recv_size)
                     {
 						ret = process_server_msg(clients[i]);
                         if(ret != SUCCESS)
@@ -353,15 +332,15 @@ static void tcp_loop(int listenfd)
                             total_connections--;
                             continue;
                         }
-                        memset(clients[i]->head_buf, 0, HEAD_LEN);
-                        clients[i]->data_size = HEAD_LEN;
+                        memset(clients[i]->recv_head, 0, HEAD_LEN);
+                        clients[i]->recv_size = HEAD_LEN;
                         clients[i]->pos = 0;
-                        if(clients[i]->data_buf)
-                            free(clients[i]->data_buf);
-                        clients[i]->data_buf = NULL;
+                        if(clients[i]->recv_buf)
+                            free(clients[i]->recv_buf);
+                        clients[i]->recv_buf = NULL;
                         clients[i]->has_read_head = 0;
                     }
-                    if(clients[i]->pos > clients[i]->data_size)
+                    if(clients[i]->pos > clients[i]->recv_size)
                     {
                         DEBUG("loss msg data client index: %d ip: %s port %d", i, clients[i]->ip, clients[i]->port);
                         FD_CLR(clients[i]->fd, &allset);
@@ -387,7 +366,7 @@ static void tcp_loop(int listenfd)
                     total_connections--;
                     continue;
                 }    
-				cli->data_size = ret;
+				cli->recv_size = ret;
 				//DEBUG("%s", cli->rtsp_buf);
  				if(rtsp_cmd_match(cli) < 0)
 				{
@@ -441,7 +420,6 @@ static void *thread_tcp(void *param)
 int init_server()
 {
 	int ret;
-	
     if(window_size <= 0 || window_size > 5)
     {   
         DEBUG("window size: %d error", window_size);
@@ -470,7 +448,6 @@ int init_server()
 		close_fd(server_s);
 		return ERROR;
 	}
-
 #if 0
 	/* event */	
 	ret = pthread_create(&pthread_sdl, NULL, thread_sdl, NULL);
@@ -485,45 +462,3 @@ int init_server()
 	return SUCCESS;	
 }
 
-
-#if 0
-int main(int argc, char *argv[])
-{
-	//init_logs();
-#if 0
-	ret = load_wsa();
-    if(SUCCESS != ret)
-    {   
-        DEBUG("load wsa error");
-		return ERROR;
-    }
-#endif
-	//rtp_send_packet(NULL, 23000, 0);	
-#if 1
-	int ret;
-
-	ret = init_pipe();
-	if(SUCCESS != ret)
-	{
-		DEBUG("init pipe error");
-		return ERROR;
-	}
-
-	ret = init_signal();
-	if(SUCCESS != ret)
-	{
-		DEBUG("init pipe error");
-		return ERROR;
-	}
-
-	client_port = 23000;
-	window_size = 2;
-	start_server();
-	//sleep(100);
-	for(;;)
-	{
-		sleep(1);
-	}
-#endif
-}
-#endif

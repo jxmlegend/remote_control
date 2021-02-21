@@ -95,6 +95,7 @@ int main(int argc, char *argv[])
         DEBUG("init pipe error ret:%d", ret);
         return ERROR;
     }
+
 	ret = init_SDL();
 	if(SUCCESS != ret)
 	{

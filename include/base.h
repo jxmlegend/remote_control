@@ -85,6 +85,8 @@
 #define HEAD_LEN 8
 #define CLIENT_BUF 1024 * 1024
 
+#define TIME_OUT 10
+
 #define DATA_SYN 0xFF
 #define DATA_SYN_OFFSET 0
 #define DATA_ENCRYPT 1

@@ -8,7 +8,8 @@ sem_t rtspd_accept_lock;
 pthread_cond_t rtspd_cond;
 pthread_mutex_t rtspd_mutex;
 
-struct rtsp_buffer *rtsp[MAX_CONN];
+//struct rtsp_buffer *rtsp[MAX_CONN];
+struct rtsp_cli *rtsp;
 
 char *get_stat(int code)
 {
@@ -520,6 +521,7 @@ void rtspd_tcp_loop(int sockfd)
 
 int set_framerate(int rate, int free_chn)
 {
+#if 0
 	switch(rate)
 	{
 		case 15:
@@ -535,12 +537,51 @@ int set_framerate(int rate, int free_chn)
 			rtsp[free_chn]->frame_rate_step = 3600;
 			break;
 	}
+#endif
 }
 
+int rtspd_freechn()
+{
+	int i;
+	for(i = 0; i < max_conn; i++)
+	{
+		if(rtsp[i].conn_status == 0)
+		{
+			return i;
+		}
+	}
+	return -1;
+}
 
+int rtspd_chn_init()
+{
+	int i, j, ret, chn;
+	max_conn = window_size * window_size;
+	rtsp = (struct rtsp_cli *)malloc(sizeof(struct rtsp_cli) * max_conn);
+	if(!rtsp)	
+		return ERROR;
+
+	memset(rtsp, 0, sizeof(struct rtsp_cli) * max_conn);
+	
+	for(i = 0; i < window_size; i++)
+	{
+		for(j = 0; j < window_size; j++)
+		{
+			chn = i + j * window_size;
+			rtsp[chn].chn = chn;
+			rtsp[chn].x = i * vids_width;
+			rtsp[chn].y = j * vids_height;
+			rtsp[chn].w = vids_width;
+			rtsp[chn].h = vids_height;
+			
+			//rtsp[chn].vids_buf = ()malloc;
+		}		
+	}
+}
 
 int init_rtspd()
 {
+#if 0
 	int ret, i;
 	int sockfd = -1;
 	int free_chn;
@@ -586,6 +627,7 @@ int init_rtspd()
 	rtspd_tcp_loop(sockfd);	
 	//rtspd_free();
 	return SUCCESS;
+#endif
 }
 
 

@@ -17,6 +17,7 @@ int screen_width  = 0;
 int screen_height = 0;
 int vids_width = 0;
 int vids_height = 0;
+int max_conn = 0;
 
 static int default_width  = 1600;
 static int default_height = 900;
@@ -40,6 +41,7 @@ static SDL_Texture *ttf_texture = NULL;
 static TTF_Font *font = NULL;
 
 static int area_id = -1;
+int display_size = 0;
 
 SDL_mutex *renderer_mutex;
 SDL_cond *cond;
@@ -319,9 +321,26 @@ int create_window()
     if(!window || !renderer || !renderer_info.num_texture_formats)
     {
         DEBUG("Failed to create window or renderer: %s", SDL_GetError());
-		//close_window();
-		//return ERROR;
+		close_window();
+		return ERROR;
     }
+
+#if 0
+    /* 局部画板 */
+    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_IYUV, SDL_TEXTUREACCESS_STREAMING, vids_width, vids_height);
+    if(!texture)
+    {
+        DIE("create texture err");
+    }
+
+    /* 全局画板 */
+    full_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_IYUV, SDL_TEXTUREACCESS_STREAMING, screen_width, screen_height);
+    if(!full_texture)
+    {
+        DIE("create full texture err");
+    }
+#endif
+
 
 	sdl_loop();
 	return SUCCESS;
@@ -334,6 +353,7 @@ int init_SDL()
 
 	init_X11();
 	get_screen_size(&screen_width, &screen_height);
+	DEBUG("screen_width %d screen_height %d", screen_width, screen_height);
 
 	renderer_mutex = SDL_CreateMutex();
 	if(!renderer_mutex)
@@ -380,7 +400,52 @@ int init_SDL()
     }    
     SDL_EventState(SDL_SYSWMEVENT, SDL_IGNORE);
     SDL_EventState(SDL_USEREVENT, SDL_IGNORE);
+	
+    vids_width = screen_width / window_size;
+    vids_height = screen_height / window_size;
+	
+	init_rtspd_chn();
 
+#if 0
+    vids_queue = (QUEUE *)malloc(sizeof(QUEUE) * display_size);
+    vids_buf = (unsigned char **)malloc(display_size * sizeof(unsigned char *));
+
+    displays = (rfb_display *)malloc(sizeof(rfb_display) * window_size * window_size);
+    pthread_decodes = (pthread_t *)malloc(sizeof(pthread_t) * window_size * window_size);
+       
+    if(!vids_queue || !vids_buf || !displays || !pthread_decodes)
+    {   
+        //DEBUG("param malloc err");
+		return ERROR;
+    }   
+    memset(displays, 0, sizeof(rfb_display) * window_size * window_size);
+
+    for(i = 0; i < window_size; i++)
+    {   
+        for(j = 0; j < window_size; j++)
+        {   
+            id = i + j * window_size;
+            displays[id].id = id; 
+            displays[id].rect.x = i * vids_width;
+            displays[id].rect.y = j * vids_height;
+            displays[id].rect.w = vids_width;
+            displays[id].rect.h = vids_height;
+
+
+            vids_buf[id] = (unsigned char *)malloc(MAX_VIDSBUFSIZE * sizeof(unsigned char));
+            memset(vids_buf[id], 0, MAX_VIDSBUFSIZE);
+            /* 创建窗口的对应队列 */
+            init_queue(&(vids_queue[id]), vids_buf[id], MAX_VIDSBUFSIZE);
+
+            /* 创建对应窗口的显示线程 */
+            ret = pthread_create(&(pthread_decodes[id]), NULL, thread_decode, &(displays[id]));
+            if(0 != ret)
+            {
+                DIE("ThreadDisp err %d,  %s",ret , strerror(ret));
+            }
+        }
+    }
+#endif
 	return SUCCESS;
 }
 

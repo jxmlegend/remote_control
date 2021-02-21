@@ -126,7 +126,3 @@ int main(int argc, char *argv)
 	release_mmap(entry_1);
 }
 #endif
-
-
-
-

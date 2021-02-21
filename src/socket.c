@@ -72,11 +72,11 @@ int send_request(struct client *cli)
     if(!cli || !cli->fd)
         return ERROR;
 
-    ret = send_msg(cli->fd, cli->head_buf, HEAD_LEN);
-    if(cli->data_buf && cli->data_size)
+    ret = send_msg(cli->fd, cli->send_head, HEAD_LEN);
+    if(cli->send_buf && cli->send_size)
 	{
-        ret = send_msg(cli->fd, cli->data_buf, cli->data_size);
-		free(cli->data_buf);	
+        ret = send_msg(cli->fd, cli->send_buf, cli->send_size);
+		free(cli->send_buf);
 	}
     return ret; 
 }

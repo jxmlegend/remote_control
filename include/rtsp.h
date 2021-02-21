@@ -37,11 +37,22 @@ struct rtsp_buffer
 	uint16_t seq;
 	uint32_t ssrc;		
 
-
 	uint8_t in_buf[1024];
 	uint8_t out_buf[1024];
 };
 
+typedef struct rtsp_cli
+{
+	uint8_t chn;
+	uint8_t is_running;
+	uint8_t conn_status;
+	uint8_t rtspd_status;
+
+	uint32_t x;
+	uint32_t y;
+	uint32_t w;
+	uint32_t h;
+}rtsp_cli;
 
 
 

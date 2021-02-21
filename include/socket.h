@@ -45,4 +45,25 @@ struct request
 	}
 };
 
+typedef struct rtp_format
+{
+    unsigned int width;
+    unsigned int height;
+
+    unsigned int video_code;
+    unsigned int video_port;
+	
+	unsigned int audio_code;
+	unsigned int audio_port;
+
+    unsigned char control_flag;            // 0 stop 1 play  2 control
+    unsigned int control_port;
+
+    unsigned char fps;
+    unsigned int bps;
+}rtp_format;
+
+#define H264 1
+#define PCM 2
+
 #endif

@@ -1,5 +1,4 @@
 
-
 //“我”的编码是0xAFCA  HZK16点阵字库 起始位置 ((CA-161)*94+AF-161)*32
 void DISP_PutHz_String_24x24(UINT32 uiX, UINT32 uiY, CHAR8 * pcStr,USHORT16 usColor)
 {
@@ -16,7 +15,7 @@ void DISP_PutHz_String_24x24(UINT32 uiX, UINT32 uiY, CHAR8 * pcStr,USHORT16 usCo
   FILE *fp_hzk = fopen("/mnt/nfs/hzk24_sth.fon", "rb");
   
   while(1)
-    { 
+  { 
       slOfs=0;
       if('\0'==(*pcStr))
         break;
