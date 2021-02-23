@@ -3,6 +3,7 @@
 #ifdef _WIN32
 #include "dll.h"
 
+HWND hwnd = NULL;
 static stop_callback stop_cb;
 static int init_flag = 0;
 static int running = 0;
@@ -15,14 +16,14 @@ static int running = 0;
 @param pageSize 终端显示个数0-5  2*2 = 4
 成功返回0, 否则返回对应错误号
 */
+
+sem_t server_sem;
+
 CAPTUREANDCAST_API int StartMonitorServer(const int clientPort, const int controlPort, const int dataPort, 
 					const int winStyleFlag, const int pageSize, stop_callback call)
 {
-	if(!init_flag)
-	{
-		init_server();
-		init_flag = 1;	
-	}
+	int ret;
+
 	
 	server_flag = 1;
 
@@ -33,21 +34,46 @@ CAPTUREANDCAST_API int StartMonitorServer(const int clientPort, const int contro
     window_size = pageSize;
 	stop_cb = call;
 
+	if(running)
+	{
+		DEBUG("server already running");
+		return ERROR;
+	}
+
+    init_logs();
+    ret = load_wsa();
+    if(SUCCESS != ret)
+    {
+        DEBUG("load wsa error ret:%d", ret);
+        return ERROR;
+    }
+    ret = init_pipe();
+    if(SUCCESS != ret)
+    {
+        DEBUG("init pipe error ret:%d", ret);
+        return ERROR;
+    }
+
+    ret = init_SDL();
+    if(SUCCESS != ret)
+    {
+        DEBUG("init SDL error ret:%d", ret);
+        return ERROR;
+    }
+
     if(window_size <= 0 || window_size > 5)
     {
         DEBUG("window size param is error window_size: %d", window_size);
         return ERROR;
     }
 
-	//listen_port ();
-	//create_window();	
-
-	if(running)
+	if(!init_flag)
 	{
-		stop_server();
+		init_SDL();
+		init_flag = 1;	
 	}
-	running = start_server();
-	return !running;
+	running = 1;
+	return init_server();
 }
 
 /*
@@ -57,11 +83,15 @@ CAPTUREANDCAST_API int StartMonitorServer(const int clientPort, const int contro
 */
 CAPTUREANDCAST_API int StopMonitorServer()
 {
-	//close_port();
-	//destory_window();
-	//running = stop_server();
-	//send_pipe();
-	//return SUCCESS;
+	if(running)
+	{
+		sdl_window_quit();
+		unload_wsa();
+		close_pipe();
+		close_logs();
+		running = 0;
+	}
+	return SUCCESS;
 }
 
 /*
@@ -84,7 +114,7 @@ CAPTUREANDCAST_API int DisconnectAllClient()
 CAPTUREANDCAST_API int ExitControl()
 {
 	//DEBUG("");
-	send_pipe();
+	//send_pipe();
 	//return convert_mode(0);
 }
 
@@ -128,6 +158,6 @@ void stop_server()
     if(stop_cb)
         stop_cb();
     stop_cb = NULL;
+	running = 0;
 }
-
 #endif	//_WIN32

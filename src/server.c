@@ -1,11 +1,24 @@
 #include "base.h"
 #include "client.h"
+#include "rtsp.h"
 #include "server.h"
 
 static int server_s = -1;
-static pthread_t pthread_sdl, pthread_tcp;
+static pthread_t pthread_sdl, pthread_tcp, pthread_udp;
 int total_connections = 0;
 struct client **clients = NULL;
+struct client *control_cli;
+
+extern struct rtsp_cli *rtsp;
+
+static int send_done(struct client *cli);
+static int send_control(struct client *cli);
+static int send_play(struct client *cli);
+
+extern QUEUE *vids_queue;
+
+void *thread_ffmpeg_video_decode(void *param);
+pthread_mutex_t client_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 void exit_server()
 {
@@ -17,33 +30,240 @@ void exit_server()
     DEBUG("pthread_exit %d tcp", (int)tret);
 }
 
+int close_client(struct client *cli)
+{
+	pthread_mutex_lock(&client_mutex);
+	if(!cli)
+	{
+		goto run_out;
+	}
+	
+	if(cli->send_buf)
+		free(cli->send_buf);
+
+	if(cli->recv_buf)
+		free(cli->recv_buf);
+	
+	close_fd(cli->fd);
+	
+	cli->send_buf = NULL;
+	cli->recv_buf = NULL;
+	cli->fd = -1;
+
+	rtspd_chn_stop(cli->chn);
+
+	free(cli);
+run_out:
+	pthread_mutex_unlock(&client_mutex);
+	return SUCCESS;
+}
+
+int free_clients()
+{
+	int i;
+	for(i = 1; i < max_connections; i++)
+	{
+		if(clients[i])
+		{
+			close_client(clients[i]);
+			clients[i] = NULL;
+		}
+	}
+	free(clients);
+}
+
+int convert_model(int chn, int model)
+{
+	int i;
+	for(i = 0; i < max_conn; i++)
+	{
+		if(!rtsp[i].cli)
+			continue;
+
+		if(model == PLAY)
+		{
+			rtsp[i].cli->status = PLAY;	
+		}
+		else if(model == CONTROL)
+		{
+			if(i == chn)
+				rtsp[i].cli->status = CONTROL;
+			else
+				rtsp[i].cli->status = READY;
+		}
+		send_done(rtsp[i].cli);	
+	}
+	control_cli = NULL;
+	clear_texture();
+	return SUCCESS;
+}
+
+static int recv_done(struct client *cli)
+{
+	int ret;
+	DEBUG("cli->status %d chn %d is_running %d", cli->status, cli->chn, rtsp[cli->chn].is_running);
+	if(rtsp[cli->chn].is_running)
+	{
+		rtspd_chn_stop(&rtsp[cli->chn]);
+	}
+	switch(cli->status)
+	{
+		case PLAY:
+			ret = send_play(cli);
+			break;
+		case CONTROL:
+			ret = send_control(cli);
+			break;
+		case READY:
+			ret = SUCCESS;
+			break;
+		default:
+			ret = ERROR;	
+			break;
+	}
+	return ret;
+}
+
+static int send_done(struct client *cli)
+{
+	cli->send_size = 0;
+	set_request_head(cli->send_head, 0, DONE_MSG, cli->send_size);
+    return send_request(cli);
+}
+
+static int recv_control(struct client *cli)
+{
+	struct request *req = (struct request *)cli->recv_buf;
+    if(req->code == 200)
+    {   
+    	cli->status = CONTROL;
+		if(rtsp[cli->chn].is_running)
+		{
+			//rtspd_chn_stop(&rtsp[cli->chn]);
+			DEBUG("running 2222222222222222222222");
+		}
+		control_cli = cli;
+
+		rtsp[cli->chn].is_running = 1;
+		rtsp[cli->chn].video_fmt.model = CONTROL;	
+		rtsp[cli->chn].cli = cli;
+		return pthread_create(&rtsp[cli->chn].pthread_video_decode, NULL, thread_ffmpeg_video_decode, 
+				&rtsp[cli->chn].video_fmt); 
+    }   
+    else
+    {   
+        DEBUG("control error code %d msg %s", req->code, req->msg);
+        return ERROR;
+    }
+}
+
+static int send_control(struct client *cli)
+{
+	int ret;
+  	cli->send_size = sizeof(rtp_format) + 1;
+    cli->send_buf = malloc(cli->send_size);
+    if(!cli->send_buf)
+        return ERROR;
+
+    rtp_format *fmt = (rtp_format *)cli->send_buf;	
+
+	fmt->video_fmt.width = screen_width;
+	fmt->video_fmt.height = screen_height;
+	fmt->video_fmt.fps = 16;
+	fmt->video_fmt.bps = 400000;
+
+	fmt->model = CONTROL;
+	fmt->video_port = rtsp[cli->chn].video_port;
+	
+	set_request_head(cli->send_head, 0, CONTROL_MSG, cli->send_size);
+    return send_request(cli);
+}
 
 static int recv_play(struct client *cli)
 {   
-
+   struct request *req = (struct request *)cli->recv_buf;
+    if(req->code == 200)
+    {   
+        cli->status = PLAY;
+		if(rtsp[cli->chn].is_running)
+		{
+			//rtspd_chn_stop(&rtsp[cli->chn]);
+			DEBUG("running 111111111111111111111111");
+		}
+		DEBUG("cli->chn %d", cli->chn);
+		
+		rtsp[cli->chn].is_running = 1;
+		rtsp[cli->chn].video_fmt.model = PLAY;	
+		rtsp[cli->chn].cli = cli;
+		return pthread_create(&rtsp[cli->chn].pthread_video_decode, NULL, thread_ffmpeg_video_decode, 
+				&rtsp[cli->chn].video_fmt); 
+    }   
+    else
+    {   
+        DEBUG("play error code %d msg %s", req->code, req->msg);
+        return ERROR;
+    }
 }
 
 static int send_play(struct client *cli)
 {
+	int ret;
+  	cli->send_size = sizeof(rtp_format) + 1;
+    cli->send_buf = malloc(cli->send_size);
+    if(!cli->send_buf)
+        return ERROR;
 
+    rtp_format *fmt = (rtp_format *)cli->send_buf;	
+
+	fmt->video_fmt.width = vids_width;
+	fmt->video_fmt.height = vids_height;
+	fmt->video_fmt.fps = 12;
+	fmt->video_fmt.bps = 200000;
+
+	fmt->model = PLAY;
+	fmt->video_port = rtsp[cli->chn].video_port;
+	
+	set_request_head(cli->send_head, 0, PLAY_MSG, cli->send_size);
+    return send_request(cli);
 }
 
 static int send_options(struct client *cli)
 {
-	int free_chn = rtspd_freechn();
-	if(free_chn == -1)
-	{
+    int ret;
 
-	}
+    cli->send_size = sizeof(struct request) + 1;
+    cli->send_buf = (unsigned char *)malloc(cli->send_size);
+
+    if(!cli->send_buf)
+        return ERROR;
+
+    struct request *req = (struct request *)cli->send_buf;
+    
+    cli->status = READY;
+    req->code = 200;
+    set_request_head(cli->send_head, 0, OPTIONS_MSG, cli->send_size);
+    send_request(cli);
+	return send_play(cli);
 }
 
 static int recv_options(struct client *cli)
 {
 	if(cli->status != OPTIONS)
 		return ERROR;
+
+	int free_chn = rtspd_get_freechn();
+	if(free_chn == -1)
+	{
+		return ERROR;
+	}
 	
-	rtp_format *fmt = (rtp_format *)cli->recv_buf;
-	memcpy(&cli->fmt, fmt, sizeof(rtp_format));
+	DEBUG("free_chn %d", free_chn);
+	rtsp[free_chn].cli = cli;	
+	cli->chn = free_chn;
+	
+	//rtp_format *fmt = (rtp_format *)cli->recv_buf;
+	//if(fmt)
+	//	memcpy(&rtsp[free_chn].video_fmt, fmt, sizeof(rtp_format));
 	return send_options(cli);	
 }
 
@@ -125,17 +345,18 @@ static void tcp_loop(int listenfd)
     
     FD_ZERO(&allset);
     FD_SET(listenfd, &allset);
-    FD_SET(pipe_tcp[0], &allset);   
+    //FD_SET(pipe_tcp[0], &allset);   
 
     maxfd = maxfd > listenfd ? maxfd : listenfd;
     maxfd = maxfd > pipe_tcp[0] ? maxfd : pipe_tcp[0];
 
 	struct client pipe_cli = {0};
-	clients[0] = &pipe_cli;	
+	//clients[0] = &pipe_cli;	
 	pipe_cli.fd = pipe_tcp[0];
 	struct client *cli = NULL;
 	time_t last_time = current_time;
 
+	DEBUG("maxfd %d listenfd %d pipe_tcp[0] %d", maxfd, listenfd, pipe_tcp[0]);
 	for(;;)
 	{
         tv.tv_sec = 1;
@@ -152,7 +373,6 @@ static void tcp_loop(int listenfd)
             }
         }
         nready = ret;
-
 	   	(void)time(&current_time);
         if(current_time - last_time >= TIME_OUT)
         {   
@@ -174,12 +394,15 @@ static void tcp_loop(int listenfd)
             memset(cli, 0, sizeof(struct client));
             cli->fd = connfd;
             cli->recv_size = HEAD_LEN;
+
 #ifdef _WIN32
+#if 0
 			ret = 1;
     		if(ioctlsocket(connfd, FIONBIO, (u_long *)&ret) == SOCKET_ERROR)
     		{   
         		DEBUG("fcntl F_SETFL fail");
     		} 
+#endif
             memcpy(cli->ip,inet_ntoa(cliaddr.sin_addr), sizeof(cli->ip));
 #else
             ret = fcntl(connfd, F_GETFL, 0);
@@ -208,7 +431,7 @@ static void tcp_loop(int listenfd)
             }    
 #endif
             FD_SET(connfd, &allset);
-            for(i = 0; i < max_connections; i++)
+            for(i = 1; i < max_connections; i++)
             {
                 if(clients[i] == NULL)
 				{
@@ -216,19 +439,18 @@ static void tcp_loop(int listenfd)
                 	break;
 				}
             }
-			cli->session_id = i;
             total_connections ++;
             if(i >= maxi)
                 maxi = i;
             if(connfd > maxfd)
                 maxfd = connfd;
 
-            DEBUG("client index: %d total_connections: %d maxi: %d connfd ip: %s",i, total_connections, maxi, cli->ip);
+            DEBUG("client index: %d total_connections: %d maxi: %d connfd %d ip: %s",i, total_connections, maxi, connfd, cli->ip);
             if(--nready <= 0)
                 continue;
         }
     
-		for(i = 0; i <= maxi; i++)
+		for(i = 1; i <= maxi; i++)
 		{
             if(clients[i] == NULL || (sockfd = clients[i]->fd) < 0)     
                 continue;
@@ -237,7 +459,7 @@ static void tcp_loop(int listenfd)
                 if(clients[i]->has_read_head == 0)
                 {    
                     if((ret = recv(sockfd, (void *)clients[i]->recv_head + clients[i]->pos, 
-                                        HEAD_LEN-clients[i]->pos, 0)) <= 0)     
+                                        HEAD_LEN - clients[i]->pos, 0)) <= 0)     
                     {    
                         if(ret < 0) 
                         {    
@@ -301,7 +523,7 @@ static void tcp_loop(int listenfd)
                     if(clients[i]->pos < clients[i]->recv_size)
                     {
                         if((ret = recv(sockfd,clients[i]->recv_buf+clients[i]->pos,
-                                        clients[i]->recv_size - clients[i]->pos,0)) <= 0)
+								clients[i]->recv_size - clients[i]->pos, 0)) <= 0)
                         {
                             if(ret < 0)
                             {
@@ -387,6 +609,26 @@ run_out:
 	return ;
 }
 
+void destory_thread_tcp()
+{
+	void *tret;	
+
+	DEBUG("destory server tcp thread");
+	pthread_cancel(pthread_tcp);				
+    pthread_join(pthread_tcp, &tret);  //等待线程同步
+
+    DEBUG("pthread_exit %d udp", (int)tret);
+	free_clients();
+	close_fd(server_s);
+
+	pthread_cancel(pthread_udp);				
+    pthread_join(pthread_udp, &tret);  //等待线程同步
+
+    DEBUG("pthread_exit %d udp", (int)tret);
+}
+
+
+
 static void *thread_tcp(void *param)
 {
     int ret;
@@ -417,14 +659,132 @@ static void *thread_tcp(void *param)
     return (void *)0;
 }
 
-int init_server()
+static void udp_loop()
+{
+    int i, ret, nready;
+    struct timeval tv;
+    fd_set fds;
+    tv.tv_sec = 1;
+    tv.tv_usec = 0;
+    int sockfd = -1;
+    socklen_t socklen = sizeof (struct sockaddr_in);
+    unsigned int total_size = 0;
+    unsigned int offset = 0;
+    unsigned char *tmp;
+    unsigned short count = 0;
+	int maxfd = -1;	
+
+    fd_set allset;
+    FD_ZERO(&allset);
+    for(i = 0; i < max_conn; i++)
+    {
+		rtsp[i].video_fd = create_udp_server(NULL, rtsp[i].video_port, &(rtsp[i].recv_addr));
+        FD_SET(rtsp[i].video_fd, &allset);
+        maxfd = maxfd > rtsp[i].video_fd ? maxfd : rtsp[i].video_fd;
+    }
+
+	for(;;)
+    {
+        fds = allset;
+        tv.tv_sec = 1;
+
+        ret = select(maxfd + 1, &fds, NULL, NULL, &tv);
+        if(ret == 0)
+            continue;
+
+        nready = ret;
+        for(i = 0; i < max_conn; i++)
+        {
+            if((sockfd = rtsp[i].video_fd) < 0)
+                continue;
+            if(FD_ISSET(sockfd, &fds))
+            {
+                ret = recvfrom(sockfd, (char *)rtsp[i].frame_buf + rtsp[i].frame_pos, MAX_VIDSBUFSIZE, 0,
+                    (struct sockaddr*)&(rtsp[i].recv_addr), &socklen);
+				
+                tmp = &(rtsp[i].frame_buf[rtsp[i].frame_pos]);
+                rtsp[i].frame_pos += ret; 
+                if(tmp[0] == 0xff && tmp[1] == 0xff)
+                {    
+                    rtsp[i].frame_size = *((unsigned int *)&tmp[4]);
+                }    
+                if(rtsp[i].frame_pos == rtsp[i].frame_size + 8) 
+                {    
+                    en_queue(&vids_queue[i], rtsp[i].frame_buf + 8,  rtsp[i].frame_pos - 8, 0x0);
+                    rtsp[i].frame_pos = 0; 
+                    rtsp[i].frame_size = 0; 
+                }    
+                else if(rtsp[i].frame_pos > rtsp[i].frame_size + 8 || rtsp[i].frame_pos >= MAX_VIDSBUFSIZE)
+                {    
+                    rtsp[i].frame_pos = 0; 
+                    rtsp[i].frame_size = 0; 
+                }  
+				
+                if(ret < 0)
+                    continue;
+                
+                if(--nready <= 0)
+                  break;
+           }
+        }
+    }
+}
+
+static void *thread_udp(void *param)
+{
+    int ret;
+    pthread_attr_t st_attr;
+    struct sched_param sched;
+
+    //pthread_detach(pthread_self());
+    ret = pthread_attr_init(&st_attr);
+    if(ret)
+    {   
+        DEBUG("thread server tcp attr init warning ");
+    }   
+    ret = pthread_attr_setschedpolicy(&st_attr, SCHED_FIFO);
+    if(ret)
+    {   
+        DEBUG("thread server tcp set SCHED_FIFO warning");
+    }   
+    sched.sched_priority = SCHED_PRIORITY_DECODE;
+    ret = pthread_attr_setschedparam(&st_attr, &sched);
+
+    pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);     //线程可以被取消掉
+    pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS,NULL);//立即退出
+    //pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, NULL);//立即退出  PTHREAD_CANCEL_DEFERRED 
+
+	udp_loop();
+    return (void *)0;
+}
+
+
+static void usage()
+{
+    DEBUG("\nYZY REMOTE CONTROL SERVER VERSION :\n"
+           "\n"
+           );
+}
+
+int init_server(int *running)
 {
 	int ret;
+	
+	usage();
+
     if(window_size <= 0 || window_size > 5)
     {   
         DEBUG("window size: %d error", window_size);
         return ERROR;
     }   
+
+	ret = rtspd_chn_init();
+	if(ret != SUCCESS)
+	{
+		DEBUG("rtsp chn init error");
+		return ERROR;
+	}
+	DEBUG("rtsp chn SUCCESS");
 
 	server_s = create_tcp_server(NULL, client_port);
 	if(server_s == -1)
@@ -433,12 +793,15 @@ int init_server()
 		return ERROR;
 	}
 
+	DEBUG("create tcp sockfd SUCCESS");
     clients = (struct client **)malloc(sizeof(struct client *) * max_connections);
     if(!clients)
     {   
         DEBUG("clients malloc error %s max_connections %d", strerror(errno), max_connections);
         return ERROR;
     }   
+	memset(clients, 0, sizeof(struct client *) * max_connections);
+	DEBUG("clients malloc %d SUCCESS", max_connections);
 	
 	/* socket */	
 	ret = pthread_create(&pthread_tcp, NULL, thread_tcp, &server_s);
@@ -448,7 +811,15 @@ int init_server()
 		close_fd(server_s);
 		return ERROR;
 	}
-#if 0
+
+	DEBUG("create thread tcp SUCCESS");
+	ret = pthread_create(&pthread_udp, NULL, thread_udp, NULL);
+	if(SUCCESS != ret)
+	{
+		free(clients);
+		close_fd(server_s);
+		return ERROR;
+	}
 	/* event */	
 	ret = pthread_create(&pthread_sdl, NULL, thread_sdl, NULL);
 	if(SUCCESS != ret)
@@ -458,7 +829,8 @@ int init_server()
 		close_fd(server_s);
 		return ERROR;
 	}
-#endif
+	*running = 1;
+	DEBUG("create thread sdl SUCCESS");
 	return SUCCESS;	
 }
 

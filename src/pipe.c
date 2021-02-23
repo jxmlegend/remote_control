@@ -9,6 +9,38 @@ int pipe_ui[2] = {0};
 int init_pipe()
 {
 #ifdef _WIN32
+#if 0
+    int listenfd = 0, ret;
+    struct sockaddr_in cliaddr;
+    socklen_t clilen = sizeof(cliaddr);
+
+    listenfd = create_tcp();
+    ret = bind_socket(listenfd, 22001);
+
+    pipe_event[1] = create_tcp();
+    ret = connect_server(pipe_event[1], "127.0.0.1", 22001);
+
+    pipe_event[0] = accept(listenfd, (struct sockaddr *)&cliaddr, &clilen);
+    close_fd(listenfd);
+
+    listenfd = create_tcp();
+    ret = bind_socket(listenfd, 22002);
+
+    pipe_tcp[1] = create_tcp();
+    ret = connect_server(pipe_tcp[1], "127.0.0.1", 22002);
+
+    pipe_tcp[0] = accept(listenfd, (struct sockaddr *)&cliaddr, &clilen);
+    close_fd(listenfd);
+
+    listenfd = create_tcp();
+    ret = bind_socket(listenfd, 22003);
+
+    pipe_udp[1] = create_tcp();
+    ret = connect_server(pipe_udp[1], "127.0.0.1", 22003);
+
+    pipe_udp[0] = accept(listenfd, (struct sockaddr *)&cliaddr, &clilen);
+    close_fd(listenfd);
+#endif
 
 #else
     /* create pipe to give main thread infomation */

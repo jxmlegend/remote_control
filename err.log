@@ -1,142 +1,130 @@
 In file included from ./include/base.h:44:0,
-                 from ./src/server.c:1:
-./include/socket.h:46:1: warning: no semicolon at end of struct or union
+                 from ./src/client.c:1:
+./include/socket.h:51:1: warning: no semicolon at end of struct or union
  };
  ^
-In file included from ./src/server.c:1:0:
-./include/base.h:76:0: warning: "MAX_FILENAMELEN" redefined
+In file included from ./src/client.c:1:0:
+./include/base.h:79:0: warning: "MAX_FILENAMELEN" redefined
  #define MAX_FILENAMELEN 128
  ^
 In file included from ./include/base.h:43:0,
-                 from ./src/server.c:1:
-./include/configs.h:14:0: note: this is the location of the previous definition
+                 from ./src/client.c:1:
+./include/configs.h:17:0: note: this is the location of the previous definition
  #define MAX_FILENAMELEN 256
  ^
-In file included from ./src/server.c:1:0:
-./src/server.c: In function ‘exit_server’:
-./src/server.c:15:38: warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]
-     DEBUG("pthread_exit %d display", (int)tret);
-                                      ^
-./include/base.h:51:80: note: in definition of macro ‘DEBUG’
+In file included from ./src/client.c:3:0:
+./include/rtsp.h:4:15: warning: empty declaration with storage class specifier does not redeclare tag
+ extern struct client;
+               ^
+./include/rtsp.h:6:15: warning: empty declaration with storage class specifier does not redeclare tag
+ extern struct video_format;
+               ^
+./include/rtsp.h:7:15: warning: empty declaration with storage class specifier does not redeclare tag
+ extern struct audio_format;
+               ^
+In file included from ./src/client.c:1:0:
+./src/client.c: In function ‘exit_client’:
+./src/client.c:20:34: warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]
+     DEBUG("pthread_exit %d tcp", (int)tret);
+                                  ^
+./include/base.h:52:80: note: in definition of macro ‘DEBUG’
          do { printf("File: "__FILE__", Line: %05d: " format"\r\n", __LINE__, ##__VA_ARGS__); \
                                                                                 ^
-./include/base.h:52:10: warning: implicit declaration of function ‘log_msg’ [-Wimplicit-function-declaration]
+./include/base.h:53:10: warning: implicit declaration of function ‘log_msg’ [-Wimplicit-function-declaration]
           log_msg("File: "__FILE__", Line: %05d:  " format"\r\n", __LINE__, ##__VA_ARGS__); \
           ^
-./src/server.c:15:5: note: in expansion of macro ‘DEBUG’
-     DEBUG("pthread_exit %d display", (int)tret);
+./src/client.c:20:5: note: in expansion of macro ‘DEBUG’
+     DEBUG("pthread_exit %d tcp", (int)tret);
      ^
-./src/server.c:15:38: warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]
-     DEBUG("pthread_exit %d display", (int)tret);
-                                      ^
-./include/base.h:52:78: note: in definition of macro ‘DEBUG’
-          log_msg("File: "__FILE__", Line: %05d:  " format"\r\n", __LINE__, ##__VA_ARGS__); \
-                                                                              ^
-./src/server.c:17:34: warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]
+./src/client.c:20:34: warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]
      DEBUG("pthread_exit %d tcp", (int)tret);
                                   ^
-./include/base.h:51:80: note: in definition of macro ‘DEBUG’
-         do { printf("File: "__FILE__", Line: %05d: " format"\r\n", __LINE__, ##__VA_ARGS__); \
-                                                                                ^
-./src/server.c:17:34: warning: cast from pointer to integer of different size [-Wpointer-to-int-cast]
-     DEBUG("pthread_exit %d tcp", (int)tret);
-                                  ^
-./include/base.h:52:78: note: in definition of macro ‘DEBUG’
+./include/base.h:53:78: note: in definition of macro ‘DEBUG’
           log_msg("File: "__FILE__", Line: %05d:  " format"\r\n", __LINE__, ##__VA_ARGS__); \
                                                                               ^
-./src/server.c: In function ‘convert_mode’:
-./src/server.c:22:9: warning: unused variable ‘ret’ [-Wunused-variable]
-  int i, ret;
-         ^
-./src/server.c:22:6: warning: unused variable ‘i’ [-Wunused-variable]
-  int i, ret;
-      ^
-./src/server.c: In function ‘close_client’:
-./src/server.c:37:2: warning: implicit declaration of function ‘close_fd’ [-Wimplicit-function-declaration]
-  close_fd(cli->fd);
-  ^
-./src/server.c: In function ‘recv_done’:
-./src/server.c:52:1: warning: no return statement in function returning non-void [-Wreturn-type]
- }
- ^
-./src/server.c: In function ‘send_done’:
-./src/server.c:57:1: warning: no return statement in function returning non-void [-Wreturn-type]
- }
- ^
-./src/server.c: In function ‘send_play’:
-./src/server.c:118:5: warning: implicit declaration of function ‘set_request_head’ [-Wimplicit-function-declaration]
-     set_request_head(cli->send_head, 0, PLAY_MSG, cli->send_size);
+./src/client.c: In function ‘send_done’:
+./src/client.c:28:5: warning: implicit declaration of function ‘set_request_head’ [-Wimplicit-function-declaration]
+     set_request_head(cli->send_head, 0, DONE_MSG, cli->send_size);
      ^
-./src/server.c:119:12: warning: implicit declaration of function ‘send_request’ [-Wimplicit-function-declaration]
+./src/client.c:29:12: warning: implicit declaration of function ‘send_request’ [-Wimplicit-function-declaration]
      return send_request(cli);
             ^
-./src/server.c: In function ‘send_options’:
-./src/server.c:145:3: error: expected ‘}’ before ‘else’
-   else
+./src/client.c: In function ‘recv_done’:
+./src/client.c:38:4: warning: implicit declaration of function ‘rtspd_chn_stop’ [-Wimplicit-function-declaration]
+    rtspd_chn_stop(&m_rtsp);
+    ^
+./src/client.c:39:4: warning: implicit declaration of function ‘close_fd’ [-Wimplicit-function-declaration]
+    close_fd(m_rtsp.fd);
+    ^
+./src/client.c:39:19: error: ‘struct rtsp_cli’ has no member named ‘fd’
+    close_fd(m_rtsp.fd);
+                   ^
+./src/client.c:40:4: error: ‘m_rtsp_fd’ undeclared (first use in this function)
+    m_rtsp_fd = -1;
+    ^
+./src/client.c:40:4: note: each undeclared identifier is reported only once for each function it appears in
+./src/client.c: In function ‘recv_control’:
+./src/client.c:67:18: error: ‘struct rtsp_cli’ has no member named ‘fd’
+   close_fd(m_rtsp.fd);
+                  ^
+./src/client.c:68:3: error: ‘m_rtsp_fd’ undeclared (first use in this function)
+   m_rtsp_fd = -1;
    ^
-./src/server.c: At top level:
-./src/server.c:148:2: error: expected identifier or ‘(’ before ‘else’
-  else      //监控模式
-  ^
-./src/server.c:153:1: error: expected identifier or ‘(’ before ‘}’ token
- }
- ^
-./src/server.c: In function ‘recv_login’:
-./src/server.c:187:2: warning: implicit declaration of function ‘get_version’ [-Wimplicit-function-declaration]
-  get_version(&server_major, &server_minor);
-  ^
-./src/server.c:188:9: warning: pointer targets in passing argument 1 of ‘sscanf’ differ in signedness [-Wpointer-sign]
-  sscanf(cli->recv_buf, VERSIONFORMAT, &client_major, &client_minor);
+./src/client.c:79:24: warning: implicit declaration of function ‘create_udp_client’ [-Wimplicit-function-declaration]
+  m_rtsp.video_fmt.fd = create_udp_client(server_ip, fmt->video_port);
+                        ^
+./src/client.c: In function ‘recv_play’:
+./src/client.c:119:18: error: ‘struct rtsp_cli’ has no member named ‘fd’
+   close_fd(m_rtsp.fd);
+                  ^
+./src/client.c:120:3: error: ‘m_rtsp_fd’ undeclared (first use in this function)
+   m_rtsp_fd = -1;
+   ^
+./src/client.c: In function ‘send_options’:
+./src/client.c:170:9: warning: unused variable ‘ret’ [-Wunused-variable]
+     int ret;
          ^
-In file included from /usr/include/features.h:367:0,
-                 from /usr/include/stdio.h:27,
-                 from ./include/base.h:4,
-                 from ./src/server.c:1:
-/usr/include/stdio.h:448:12: note: expected ‘const char * restrict’ but argument is of type ‘unsigned char *’
- extern int __REDIRECT_NTH (sscanf, (const char *__restrict __s,
+./src/client.c: In function ‘send_login’:
+./src/client.c:208:5: warning: implicit declaration of function ‘get_version’ [-Wimplicit-function-declaration]
+     get_version(&client_major, &client_minor);
+     ^
+./src/client.c:215:10: warning: pointer targets in passing argument 1 of ‘sprintf’ differ in signedness [-Wpointer-sign]
+  sprintf(cli->send_buf, VERSIONFORMAT, client_major, client_minor);
+          ^
+In file included from ./include/base.h:4:0,
+                 from ./src/client.c:1:
+/usr/include/stdio.h:364:12: note: expected ‘char * restrict’ but argument is of type ‘unsigned char *’
+ extern int sprintf (char *__restrict __s,
             ^
-In file included from ./src/server.c:1:0:
-./src/server.c: In function ‘process_server_msg’:
-./src/server.c:205:45: warning: implicit declaration of function ‘read_msg_order’ [-Wimplicit-function-declaration]
-  DEBUG("read_msg_order(cli->recv_head) %d", read_msg_order(cli->recv_head));
-                                             ^
-./include/base.h:51:80: note: in definition of macro ‘DEBUG’
+In file included from ./src/client.c:1:0:
+./src/client.c: In function ‘process_client_msg’:
+./src/client.c:224:48: warning: implicit declaration of function ‘read_msg_order’ [-Wimplicit-function-declaration]
+     DEBUG("read_msg_order(cli->recv_head) %d", read_msg_order(cli->recv_head));
+                                                ^
+./include/base.h:52:80: note: in definition of macro ‘DEBUG’
          do { printf("File: "__FILE__", Line: %05d: " format"\r\n", __LINE__, ##__VA_ARGS__); \
                                                                                 ^
-./src/server.c: In function ‘tcp_loop’:
-./include/base.h:51:21: warning: too many arguments for format [-Wformat-extra-args]
-         do { printf("File: "__FILE__", Line: %05d: " format"\r\n", __LINE__, ##__VA_ARGS__); \
-                     ^
-./src/server.c:326:17: note: in expansion of macro ‘DEBUG’
-                 DEBUG("connfd: %d inet_ntop error ",connfd, strerror(errno));
-                 ^
-./src/server.c:382:24: warning: implicit declaration of function ‘read_msg_syn’ [-Wimplicit-function-declaration]
-                     if(read_msg_syn(clients[i]->recv_head) != DATA_SYN)
-                        ^
-./src/server.c:394:45: warning: implicit declaration of function ‘read_msg_size’ [-Wimplicit-function-declaration]
-                     clients[i]->recv_size = read_msg_size(clients[i]->recv_head);
-                                             ^
-./src/server.c: In function ‘init_server’:
-./src/server.c:553:13: warning: implicit declaration of function ‘create_tcp_server’ [-Wimplicit-function-declaration]
-  server_s = create_tcp_server(NULL, client_port);
+./src/client.c: In function ‘tcp_loop’:
+./src/client.c:319:20: warning: implicit declaration of function ‘read_msg_syn’ [-Wimplicit-function-declaration]
+                 if(read_msg_syn(current->recv_head) != DATA_SYN)
+                    ^
+./src/client.c:327:38: warning: implicit declaration of function ‘read_msg_size’ [-Wimplicit-function-declaration]
+                 current->recv_size = read_msg_size(current->recv_head);
+                                      ^
+./src/client.c:283:16: warning: variable ‘pipe_cli’ set but not used [-Wunused-but-set-variable]
+  struct client pipe_cli = {0};
+                ^
+./src/client.c:280:11: warning: unused variable ‘tmp’ [-Wunused-variable]
+     char *tmp = &buf[HEAD_LEN];
+           ^
+./src/client.c:265:25: warning: unused variable ‘maxi’ [-Wunused-variable]
+     int nready, ret, i, maxi = 0;
+                         ^
+./src/client.c:265:22: warning: unused variable ‘i’ [-Wunused-variable]
+     int nready, ret, i, maxi = 0;
+                      ^
+./src/client.c: In function ‘init_client’:
+./src/client.c:427:13: warning: implicit declaration of function ‘create_tcp_client’ [-Wimplicit-function-declaration]
+  server_s = create_tcp_client(server_ip, server_port);
              ^
-./src/server.c: At top level:
-./src/server.c:54:12: warning: ‘send_done’ defined but not used [-Wunused-function]
- static int send_done(struct client *cli)
-            ^
-./src/server.c:98:12: warning: ‘send_play’ defined but not used [-Wunused-function]
- static int send_play(struct client *cli)
-            ^
-./src/server.c: In function ‘convert_mode’:
-./src/server.c:33:1: warning: control reaches end of non-void function [-Wreturn-type]
- }
- ^
-./src/server.c: In function ‘send_control’:
-./src/server.c:79:1: warning: control reaches end of non-void function [-Wreturn-type]
- }
- ^
-./src/server.c: In function ‘send_options’:
-./src/server.c:147:2: warning: control reaches end of non-void function [-Wreturn-type]
-  }
-  ^
-make: *** [server.o] Error 1
+make: *** [client.o] Error 1

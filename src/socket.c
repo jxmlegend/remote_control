@@ -77,6 +77,7 @@ int send_request(struct client *cli)
 	{
         ret = send_msg(cli->fd, cli->send_buf, cli->send_size);
 		free(cli->send_buf);
+		cli->send_buf = NULL;
 	}
     return ret; 
 }
@@ -129,6 +130,39 @@ int recv_msg(const int fd, char *buf, const int len)
         read_cnt += cnt;
     }
     return SUCCESS;
+}
+int frame_count = 0;
+
+void h264_send_data(char *data, int len, int fd) 
+{
+    int pending = len; 
+    int dataLen = 0; 
+    char *ptr = data;
+    char buf[DATA_SIZE + 8] = {0}; 
+    buf[0] = 0xff;
+    buf[1] = 0xff;
+    *(unsigned short *)(&buf[2]) = frame_count++;
+    *(unsigned int *)(&buf[4]) = len; 
+    int first = 1; 
+    while(pending > 0) 
+    {    
+        dataLen = min(pending, DATA_SIZE);
+
+        if(first)  //+8个字节头 1 flag 4 datalen
+        {    
+            memcpy(buf + 8, ptr, dataLen);
+            ptr += dataLen;
+            send(fd, buf,  dataLen + 8, 0);
+            first = 0; 
+        }    
+        else 
+        {    
+            memcpy(buf, ptr, dataLen);
+            ptr += dataLen;
+            send(fd, buf,  dataLen, 0);
+        }    
+        pending -= dataLen;
+    }    
 }
 
 

@@ -9,6 +9,9 @@
     #define LOG_ERR_FILE "./log/remote_monitor_err.log"
 #endif
 
+    #define LOG_DIR  "./log"
+    #define LOG_ERR_FILE "./log/remote_monitor_err.log"
+
 #define TTF_DIR "./font/msyh.ttf"
 
 #define MAX_FILENAMELEN 256

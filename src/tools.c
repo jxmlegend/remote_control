@@ -28,8 +28,6 @@
 #endif
 //#include <linux/if.h>  
 #include <assert.h>
-#include <sys/socket.h>
-#include <net/if.h>
 
 #include "base.h"
 

@@ -42,6 +42,7 @@
 
 #include "configs.h"
 #include "socket.h"
+#include "queue.h"
 #include "global.h"
 
 
@@ -72,6 +73,8 @@
 /* base */
 #define SUCCESS 0
 #define ERROR 1
+
+#define MAX_VIDSBUFSIZE 1024 * 1024 * 10
 
 #define MAX_FILENAMELEN 128
 #define MAX_BUFLEN 1024 * 1024

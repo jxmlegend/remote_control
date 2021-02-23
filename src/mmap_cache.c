@@ -1,6 +1,8 @@
 #include "base.h"
 #include "mmap_cache.h"
 
+
+#ifndef __WIN32
 int mmap_list_entries_used = 0;
 int mmap_list_total_requests = 0;
 int mmap_list_hash_bounces = 00;
@@ -108,7 +110,7 @@ struct mmap_entry *find_name_mmap(char *fname)
 	close(data_fd);
 	return e;	
 }
-
+#endif
 
 //#define MMAP_TEST
 #ifdef MMAP_TEST

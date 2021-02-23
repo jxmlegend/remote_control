@@ -1,6 +1,5 @@
 #include "base.h"
 
-sigjmp_buf env;
 int handle_sighus;
 
 //void sigsegv(int);
@@ -18,6 +17,8 @@ static void sig_quit_listen(int e)
 void init_signals()
 {
 #ifndef _WIN32
+
+	sigjmp_buf env;
     signal(SIGPIPE, SIG_IGN);
     //signal(SIGINT, SIG_IGN);
 

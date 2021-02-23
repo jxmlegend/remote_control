@@ -21,6 +21,13 @@ extern int vids_height;
 
 extern int max_conn;
 
+extern int h264_port;
+extern int control_port;
 
+
+
+#ifdef _WIN32
+    extern HWND hwnd;
+#endif
 
 #endif //__GLOBAL_H__

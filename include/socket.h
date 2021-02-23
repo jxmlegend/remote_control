@@ -32,6 +32,11 @@ enum MSG_TYPE{
 	PLAY_MSG,
 	CONTROL_MSG,
 	DONE_MSG,
+	
+	/* control */
+	MOUSE_MSG,
+	KEYBD_MSG,
+	FILE_MSG,
 };
 
 
@@ -45,6 +50,7 @@ struct request
 	}
 };
 
+#if 0
 typedef struct rtp_format
 {
     unsigned int width;
@@ -56,12 +62,15 @@ typedef struct rtp_format
 	unsigned int audio_code;
 	unsigned int audio_port;
 
-    unsigned char control_flag;            // 0 stop 1 play  2 control
     unsigned int control_port;
-
+    //unsigned char control_flag;            // 0 stop 1 play  2 control
+	unsigned char model;
     unsigned char fps;
+	uint16_t quality;
+
     unsigned int bps;
 }rtp_format;
+#endif
 
 #define H264 1
 #define PCM 2

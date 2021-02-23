@@ -12,6 +12,8 @@
 
 #include "base.h"
 #include "frame.h"
+#include "control.h"
+#include "client.h"
 
 int screen_width  = 0;
 int screen_height = 0;
@@ -41,12 +43,15 @@ static SDL_Texture *ttf_texture = NULL;
 static TTF_Font *font = NULL;
 
 static int area_id = -1;
-int display_size = 0;
 
 SDL_mutex *renderer_mutex;
+//pthread_mutex_t renderer_mutex = PTHREAD_MUTEX_INITIALIZER;
 SDL_cond *cond;
+extern struct client *control_cli;
 
 FrameQueue frame_queue;
+
+#define EVENT_QUIT    (SDL_USEREVENT + 2)
 
 static int do_exit()
 {
@@ -58,8 +63,8 @@ int destory_SDL()
     if(font)
         TTF_CloseFont(font);
 
-    if(window)
-        SDL_DestroyWindow(window);
+    //if(window)
+     //   SDL_DestroyWindow(window);
 
     if(SDL_WasInit(SDL_INIT_EVERYTHING) != 0)
     {    
@@ -140,7 +145,7 @@ void sdl_text_show(char *buf, SDL_Rect *rect)
      */
     SDL_Surface *surface = TTF_RenderUTF8_Solid(font, buf, color);
 
-	SDL_LockMutex(&renderer_mutex);
+	SDL_LockMutex(renderer_mutex);
     //if(ttf_texture)
     //   SDL_DestroyTexture(ttf_texture);
     //ttf_texture = SDL_CreateTextureFromSurface(renderer, surface);
@@ -154,7 +159,7 @@ void sdl_text_show(char *buf, SDL_Rect *rect)
     //SDL_RenderCopy(renderer, ttf_texture, NULL, &ttf_rect);
     //SDL_RenderPresent(renderer);
 	SDL_FreeSurface(surface);
-	SDL_UnlockMutex(&renderer_mutex);
+	SDL_UnlockMutex(renderer_mutex);
 }
 
 void sdl_text_clear()
@@ -190,7 +195,7 @@ void update_texture(AVFrame *frame_yuv, SDL_Rect *rect)
 {
     if(!texture || !renderer || !full_texture || !frame_yuv)
         return;
-	SDL_LockMutex(&renderer_mutex);
+	SDL_LockMutex(renderer_mutex);
     if(!rect)                               //全屏更新
     {    
         SDL_UpdateYUVTexture(full_texture, NULL,
@@ -206,19 +211,18 @@ void update_texture(AVFrame *frame_yuv, SDL_Rect *rect)
             frame_yuv->data[0], frame_yuv->linesize[0],
             frame_yuv->data[1], frame_yuv->linesize[1],
             frame_yuv->data[2], frame_yuv->linesize[2]);
-
         SDL_RenderCopy(renderer, texture, NULL, rect);
     }    
     SDL_RenderPresent(renderer);
-	SDL_UnlockMutex(&renderer_mutex);
+	SDL_UnlockMutex(renderer_mutex);
 }
 
 void clear_texture()
 {
-	SDL_LockMutex(&renderer_mutex);
+	SDL_LockMutex(renderer_mutex);
     SDL_RenderClear(renderer);
     SDL_RenderPresent(renderer);
-	SDL_UnlockMutex(&renderer_mutex);
+	SDL_UnlockMutex(renderer_mutex);
 }
 
 static void refresh_loop_wait_event(SDL_Event *event)
@@ -234,34 +238,265 @@ static void refresh_loop_wait_event(SDL_Event *event)
 	}
 }
 
+int signal_sdl_event(int event_type, void *data)
+{
+    SDL_Event event;
+    event.type = event_type;
+    event.user.data1 = data;
+    SDL_PushEvent(&event);
+}
+
+void sdl_window_quit()
+{
+	signal_sdl_event(EVENT_QUIT, NULL);
+}
+
+int close_window()
+{
+
+    if(texture)
+        SDL_DestroyTexture(texture);
+    if(full_texture)
+        SDL_DestroyTexture(full_texture);
+
+  	if(renderer)
+        SDL_DestroyRenderer(renderer);
+
+
+    if(window)
+        SDL_DestroyWindow(window);
+
+		//SDL_HideWindow(window);
+
+	texture = NULL;
+	full_texture = NULL;
+	renderer = NULL;
+	window = NULL;
+
+	return SUCCESS;
+}
+
+static void send_control(char *data, int len, int cmd)
+{
+	if(!control_cli)
+		return;		
+
+    char *buf = (char *)malloc(len + HEAD_LEN + 1);
+    if(!buf)
+        return;
+
+    char *tmp = &buf[HEAD_LEN];
+    set_request_head(buf, 0, cmd, len);
+    memcpy(tmp, data, len);
+
+	send(control_cli->fd, buf, len + HEAD_LEN, 0);
+		
+    free(buf);
+}
+
+#define PLAY 4
+#define CONTROL 5
+
 void sdl_loop()
 {
 	SDL_Event event;
+	//mouse_event mouse;
+	//keybd_event keybd;
+
+    rfb_pointevent point = {0};
+    rfb_keyevent key = {0};
+    short old_x = 0;
+    short old_y = 0;
+
+	int flags = 1;
+	time_t last_time = current_time;
+#if 0
 	for(;;)
 	{
 		refresh_loop_wait_event(&event);
 		switch(event.type)
 		{
-			case SDL_KEYDOWN:
+			case SDL_MOUSEWHEEL:
+				mouse.wheel = event.wheel.y;
+            	mouse.x = old_x;
+            	mouse.y = old_y;
+            	send_control((char *)&mouse, sizeof(mouse_event), MOUSE);
+            	mouse.wheel = 0;
+				break;	
 			case SDL_MOUSEBUTTONDOWN:
+				if(server_flag)
+				{
+					(void) time(&current_time);
+					if((current_time - last_time) > 1)
+					{
+						area_id = -1;
+						last_time = current_time;	
+					}	
+					if(area_id == get_area(event.motion.x, event.motion.y))
+					{	
+						convert_model(area_id, CONTROL);
+					}
+					area_id = get_area(event.motion.x, event.motion.y);
+				}
+				if(SDL_BUTTON_LEFT == event.button.button)
+            	{
+                	mouse.mask |= (1<<1);
+            	}
+            	if(SDL_BUTTON_RIGHT == event.button.button)
+            	{
+                	mouse.mask |= (1<<3);
+            	}
+				break;
+			case SDL_MOUSEBUTTONUP:
+            	if(SDL_BUTTON_LEFT == event.button.button)
+            	{
+                	point.mask |= (1<<2);
+            	}
+            	if(SDL_BUTTON_RIGHT == event.button.button)
+            	{
+                	point.mask |= (1<<4);
+            	}
 			case SDL_MOUSEMOTION:
+				if(mouse.mask != 0)
+				{
+					mouse.x = event.motion.x;
+					mouse.x = event.motion.x;
+					mouse.x = event.motion.x;
+				}	
+				break;
+
+			case SDL_KEYDOWN:
+				if(event.key.keysym.sym == SDLK_ESCAPE)
+            	{
+					DEBUG("convert_model 11111Z");
+					convert_model(0, PLAY);
+            	}
+				keybd.key = event.key.keysym.sym;
+				keybd.mod = event.key.keysym.mod;
+				send_control((char *)&keybd, sizeof(keybd_event), KEYBOARD);
+				break;
+			case SDL_KEYUP:
+				keybd.key = event.key.keysym.sym;
+				keybd.mod = event.key.keysym.mod;
+				keybd.down = 0;
+				send_control((char *)&keybd, sizeof(keybd_event), KEYBOARD);
+				break;
 			case SDL_WINDOWEVENT:
+				break;	
+			case EVENT_QUIT:
+				DEBUG("EVENT_QUIT ");
+				goto run_out;
 			case SDL_QUIT:
+				stop_server();
+				DEBUG("SDL_QUIT");
+				goto run_out;
 			default:
 				break;
 		}	
 	}
-}
-int close_window()
-{
-#if 0
-    SDL_Event event;
-    event.type = FF_QUIT_EVENT;
-    event.user.data1 = is;
-    SDL_PushEvent(&event);
 #endif
-	return SUCCESS;
+
+	for(;;)
+	{
+        refresh_loop_wait_event(&event);
+        /* 鼠标滚轮 */
+        if(event.type == SDL_MOUSEWHEEL)
+        {
+            point.wheel = event.wheel.y;
+            point.x = old_x;
+            point.y = old_y;
+            send_control((char *)&point, sizeof(rfb_pointevent), MOUSE_MSG);
+            point.wheel = 0;
+        }
+        /* 鼠标按下 */
+        if(event.type == SDL_MOUSEBUTTONDOWN)
+        {
+            (void) time(&current_time);
+            if((current_time - last_time) > 1)
+            {
+                area_id = -1;
+                last_time = current_time;
+            }
+
+            if(area_id == get_area(event.motion.x, event.motion.y))
+            {
+				if(flags)
+				{
+				convert_model(area_id, CONTROL);
+				flags = 0;
+				}
+            }
+            area_id = get_area(event.motion.x, event.motion.y);
+            DEBUG("area_id %d", area_id);
+            
+            if(SDL_BUTTON_LEFT == event.button.button)
+            {
+                point.mask |= (1<<1);
+            }
+            if(SDL_BUTTON_RIGHT == event.button.button)
+            {
+                point.mask |= (1<<3);
+            }
+        }
+        if(event.type == SDL_MOUSEBUTTONUP)
+        {
+            if(SDL_BUTTON_LEFT == event.button.button)
+            {
+                point.mask |= (1<<2);
+            }
+            if(SDL_BUTTON_RIGHT == event.button.button)
+            {
+                point.mask |= (1<<4);
+            }
+        }
+        if(point.mask != 0 || event.type == SDL_MOUSEMOTION)
+        {
+            point.x = event.motion.x;
+            point.y = event.motion.y;
+            old_x = point.x;
+            old_y = point.y;
+            send_control((char *)&point, sizeof(rfb_pointevent), MOUSE_MSG);
+            point.mask = 0;
+        }
+        if(SDL_KEYDOWN == event.type)
+        {
+            key.key = event.key.keysym.sym; //*(SDL_GetKeyName(event.key.keysym.sym));
+            key.mod = event.key.keysym.mod; //*(SDL_GetKeyName(event.key.keysym.sym));
+            key.down = 1;
+            send_control((char *)&key, sizeof(rfb_keyevent), KEYBD_MSG);
+            if(event.key.keysym.sym == SDLK_ESCAPE)
+            {
+				convert_model(area_id, PLAY);
+            }
+        }
+        if(SDL_KEYUP == event.type)
+        {
+            key.key = event.key.keysym.sym;
+            key.mod = event.key.keysym.mod;
+            key.down = 0;
+            send_control((char *)&key, sizeof(rfb_keyevent), KEYBD_MSG);
+        }
+
+		if(EVENT_QUIT == event.type)
+				goto run_out;
+		if(SDL_QUIT == event.type)
+				goto run_out;
+	}
+run_out:
+	destory_thread_tcp();	
+	free_rtspd();		
 }
+
+void get_window_size(int *width, int *height)
+{
+	get_screen_size(width, height);
+	if(window_flag)
+	{
+        *width = *width / 3 *2;
+        *height = *height / 3 * 2;
+	}
+}
+
 
 int create_window()
 {
@@ -272,7 +507,7 @@ int create_window()
 		flags |= SDL_WINDOW_RESIZABLE;
 
 #ifdef _WIN32
-   	if(hwnd)
+   	if(hwnd && !window)
     	window = SDL_CreateWindowFrom(hwnd);
 #endif
     if(!window)
@@ -302,6 +537,10 @@ int create_window()
         full_rect.x = 0;
         full_rect.y = 0;
     }
+
+    vids_width = screen_width / window_size;
+    vids_height = screen_height / window_size;
+
 	SDL_SetWindowSize(window, screen_width, screen_height);
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
     if(window)
@@ -325,26 +564,25 @@ int create_window()
 		return ERROR;
     }
 
-#if 0
     /* 局部画板 */
     texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_IYUV, SDL_TEXTUREACCESS_STREAMING, vids_width, vids_height);
-    if(!texture)
-    {
-        DIE("create texture err");
-    }
 
     /* 全局画板 */
     full_texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_IYUV, SDL_TEXTUREACCESS_STREAMING, screen_width, screen_height);
-    if(!full_texture)
+    if(!full_texture || !texture)
     {
-        DIE("create full texture err");
+        DEBUG("create full texture err");
+		return ERROR;
     }
-#endif
 
-
+	SDL_ShowWindow(window);
+	clear_texture();
 	sdl_loop();
 	return SUCCESS;
 }
+
+
+
 
 int init_SDL()
 {
@@ -353,7 +591,6 @@ int init_SDL()
 
 	init_X11();
 	get_screen_size(&screen_width, &screen_height);
-	DEBUG("screen_width %d screen_height %d", screen_width, screen_height);
 
 	renderer_mutex = SDL_CreateMutex();
 	if(!renderer_mutex)
@@ -400,54 +637,11 @@ int init_SDL()
     }    
     SDL_EventState(SDL_SYSWMEVENT, SDL_IGNORE);
     SDL_EventState(SDL_USEREVENT, SDL_IGNORE);
-	
-    vids_width = screen_width / window_size;
-    vids_height = screen_height / window_size;
-	
-	init_rtspd_chn();
 
-#if 0
-    vids_queue = (QUEUE *)malloc(sizeof(QUEUE) * display_size);
-    vids_buf = (unsigned char **)malloc(display_size * sizeof(unsigned char *));
-
-    displays = (rfb_display *)malloc(sizeof(rfb_display) * window_size * window_size);
-    pthread_decodes = (pthread_t *)malloc(sizeof(pthread_t) * window_size * window_size);
-       
-    if(!vids_queue || !vids_buf || !displays || !pthread_decodes)
-    {   
-        //DEBUG("param malloc err");
-		return ERROR;
-    }   
-    memset(displays, 0, sizeof(rfb_display) * window_size * window_size);
-
-    for(i = 0; i < window_size; i++)
-    {   
-        for(j = 0; j < window_size; j++)
-        {   
-            id = i + j * window_size;
-            displays[id].id = id; 
-            displays[id].rect.x = i * vids_width;
-            displays[id].rect.y = j * vids_height;
-            displays[id].rect.w = vids_width;
-            displays[id].rect.h = vids_height;
-
-
-            vids_buf[id] = (unsigned char *)malloc(MAX_VIDSBUFSIZE * sizeof(unsigned char));
-            memset(vids_buf[id], 0, MAX_VIDSBUFSIZE);
-            /* 创建窗口的对应队列 */
-            init_queue(&(vids_queue[id]), vids_buf[id], MAX_VIDSBUFSIZE);
-
-            /* 创建对应窗口的显示线程 */
-            ret = pthread_create(&(pthread_decodes[id]), NULL, thread_decode, &(displays[id]));
-            if(0 != ret)
-            {
-                DIE("ThreadDisp err %d,  %s",ret , strerror(ret));
-            }
-        }
-    }
-#endif
 	return SUCCESS;
 }
+
+
 
 void *thread_sdl(void *param)
 {
@@ -474,6 +668,7 @@ void *thread_sdl(void *param)
     //pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, NULL);//立即退出  PTHREAD_CANCEL_DEFERRED 
 
 	ret = create_window();
+	close_window();	
 	return (void *)&ret;
 }
 

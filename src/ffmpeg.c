@@ -1,49 +1,179 @@
 #include "base.h"
 #include "ffmpeg.h"
+#include "rtsp.h"
 
-extern int screen_width, screen_height;
+#define CONTROL 5
+
+extern QUEUE *vids_queue;
+
+extern struct rtsp_cli *rtsp;
+
+void clean_decode(void *arg)
+{
+    input_stream *input = (input_stream *)arg;
+    if(!input)
+        return;
+
+    if(input->img_convert_ctx)
+        sws_freeContext(input->img_convert_ctx);
+    if(input->out_buffer)
+        av_free(input->out_buffer);
+    if(input->frame_yuv)
+        av_free(input->frame_yuv);
+    if(input->frame)
+    {   
+        DEBUG("frame free !!!!!!");
+        av_free(input->frame);
+    }   
+    if(input->codec_ctx)
+    {   
+        DEBUG("codec_ctx close !!!!!!");
+        avcodec_close(input->codec_ctx);
+    }   
+    //if(input->packet)
+        //av_free_packet(input->packet);
+
+    DEBUG("clean_decode param memory !!!!!!!!!!!!");
+}
 
 void ffmpeg_video_decode(video_format *fmt)
 {
+    uint8_t *out_buffer = NULL;
+    int ret, got_picture;
+    int i;
 
+    AVCodec *codec = NULL;
+    AVCodecContext *codec_ctx = NULL;
+    AVFrame *frame = NULL, *frame_yuv = NULL;
+    AVPacket packet = {0};
+    struct SwsContext *img_convert_ctx = NULL;
 
+    QUEUE_INDEX *index = NULL;
+
+    input_stream input;
+
+    const char *decoder_name [] = {"h264_rkvpu", "h264", "h264_qsv"};
+
+    for(i = 0; decoder_name[i] != NULL; i++)
+    {
+        if(codec = avcodec_find_decoder_by_name(decoder_name[i]))
+        {
+            codec_ctx = avcodec_alloc_context3(codec);
+            if(codec_ctx)
+            {
+                DEBUG("set codec name %s", decoder_name[i]);
+                codec_ctx->thread_count = 4;
+                codec_ctx->thread_type = 2;
+
+                if (codec->capabilities&AV_CODEC_CAP_TRUNCATED)
+                    codec_ctx->flags |= AV_CODEC_FLAG_TRUNCATED; /* we do not send complete frames */
+
+                if(avcodec_open2(codec_ctx, codec, NULL < 0))
+                    continue;
+                break;
+            }
+        }
+    }
+
+    if(!codec || !codec_ctx)
+    {
+        DEBUG("Could not allocate video codec context");
+        goto run_out;
+    }
+    frame = av_frame_alloc();
+    //frame_yuv = av_frame_alloc();
+    //packet=(AVPacket *)av_malloc(sizeof(AVPacket));
+    //out_buffer = (uint8_t *)av_malloc(av_image_get_buffer_size(AV_PIX_FMT_YUV420P, MAX_WIDTH, MAX_HEIGHT, 1));
+    //if(!frame || !frame_yuv || !out_buffer ||!packet)
+
+    if(!frame)
+    {
+        DEBUG("frame or frame_yuv pkt packet malloc error :%s", strerror(errno));
+        goto run_out;
+    }
+    input.codec = codec;
+    input.codec_ctx = codec_ctx;
+    input.frame = frame;
+    input.frame_yuv = frame_yuv;
+    input.img_convert_ctx = img_convert_ctx;
+    input.out_buffer = out_buffer;
+
+    pthread_cleanup_push(clean_decode, (void *)&input);
+    /* packet 不能用指针 否则会异常 */
+    for(;;)
+    {
+        if(empty_queue(&vids_queue[fmt->chn]))
+        {
+            usleep(200);
+            continue;
+        }
+        index = de_queue(&vids_queue[fmt->chn]);
+        packet.size = index->uiSize;
+        packet.data = index->pBuf;
+        de_queuePos(&vids_queue[fmt->chn]);
+
+        ret = avcodec_decode_video2(codec_ctx, frame, &got_picture, &packet);
+        if (got_picture)
+        {
+            if(fmt->model == CONTROL)
+                update_texture(frame, NULL);
+            else
+                update_texture(frame, &(fmt->rect));
+			
+        }
+        //sdl_text_show(vid->cli->ip, &(vid->rect));
+        av_packet_unref(&packet);
+        //pthread_testcancel();     //线程取消点。延迟释放模式使用
+    }
+    pthread_cleanup_pop(0);     //走到这正常释放不调用清除函数
+run_out:
+
+    if(img_convert_ctx)
+        sws_freeContext(img_convert_ctx);
+    if(out_buffer)
+        av_free(out_buffer);
+    if(frame_yuv)
+        av_frame_free(&frame_yuv);
+    if(frame)
+        av_frame_free(&frame);
+    if(codec_ctx)
+        avcodec_close(codec_ctx);
+
+    img_convert_ctx = NULL;
+    out_buffer = NULL;
+    frame_yuv = NULL;
+    frame = NULL;
+    codec_ctx = NULL;
+    index = NULL;
+
+    clear_texture();
+    return (void *)0;
 }
 
 void clean_video_encode(void *arg)
 {
-    DEBUG("clean_encode param memory"); 
     output_stream *out = (output_stream *)arg;
     if(!out)
     {   
-        DEBUG("out param is NULL !!!!!!!!!!!!!!!");
         return;
     }
     
-    DEBUG("clean_encode param memory");
     if(out->img_convert_ctx)
         sws_freeContext(out->img_convert_ctx);
-    DEBUG("clean_encode param memory");
     if(out->out_buffer)
         av_free(out->out_buffer);
-    DEBUG("clean_encode param memory");
     if(out->frame_yuv)
         av_free(out->frame_yuv);
-    DEBUG("clean_encode param memory");
     if(out->frame)
         av_free(out->frame);
-    DEBUG("clean_encode param memory");
     if(out->h264codec_ctx)
         avcodec_close(out->h264codec_ctx);
-    DEBUG("clean_encode param memory");
     if(out->codec_ctx)
         avcodec_close(out->codec_ctx);
-    DEBUG("clean_encode param memory");
     if(out->format_ctx)
         avformat_close_input(&(out->format_ctx));
-    DEBUG("clean_encode param memory");
     if(out->packet)
         av_free_packet(out->packet);
-    DEBUG("clean_encode param memory");
     
     out->img_convert_ctx = NULL;
     out->out_buffer = NULL;
@@ -56,7 +186,6 @@ void clean_video_encode(void *arg)
     
     out = NULL;
     arg = NULL;
-    DEBUG("clean encode thread end");
 }
 
 void ffmpeg_video_encode(video_format *fmt)
@@ -86,7 +215,7 @@ void ffmpeg_video_encode(video_format *fmt)
     char opt_buf[12] = {0};
 #ifdef _WIN32
     /* 截屏 fps = framerate * 2 */
-    sprintf(opt_buf, "%d", fmt->fps);
+    sprintf(opt_buf, "%d", fmt->fps / 2);
     av_dict_set(&options,"framerate", opt_buf, 0);
 	if(fmt->draw_mouse)
     	av_dict_set(&options,"draw_mouse","1", 0);               //鼠标
@@ -98,7 +227,7 @@ void ffmpeg_video_encode(video_format *fmt)
         DEBUG("Couldn't open input stream. ");
     }
 #else
-    sprintf(opt_buf, "%d", fmt->fps);
+    sprintf(opt_buf, "%d", fmt->fps / 2);
     av_dict_set(&options,"framerate", opt_buf, 0);
 	if(fmt->draw_mouse)
     	av_dict_set(&options,"draw_mouse","1",0);               //鼠标
@@ -160,8 +289,8 @@ void ffmpeg_video_encode(video_format *fmt)
     frame_yuv->height = fmt->height;
     frame_yuv->format = AV_PIX_FMT_YUV420P;
 
-    out_buffer = (uint8_t *)av_malloc(avpicture_get_size(AV_PIX_FMT_YUV420P, fmt->width, fmt->height));
-    avpicture_fill((AVPicture *)frame_yuv, out_buffer, AV_PIX_FMT_YUV420P, fmt->width, fmt->height);
+    out_buffer = (uint8_t *)av_malloc(avpicture_get_size(AV_PIX_FMT_YUV420P, 1920, 1080));
+    avpicture_fill((AVPicture *)frame_yuv, out_buffer, AV_PIX_FMT_YUV420P, 1920, 1080);
     packet=(AVPacket *)av_malloc(sizeof(AVPacket));
 
 #ifdef ARM
@@ -185,10 +314,10 @@ void ffmpeg_video_encode(video_format *fmt)
     h264codec_ctx->width = codec_ctx->width > fmt->width ? codec_ctx->width : fmt->width;
     h264codec_ctx->height = codec_ctx->height > fmt->height ? codec_ctx->height : fmt->height;
     h264codec_ctx->time_base.num = 1;
-    h264codec_ctx->time_base.den = 12;//帧率(既一秒钟多少张图片)
+    h264codec_ctx->time_base.den = fmt->fps;//帧率(既一秒钟多少张图片)
     h264codec_ctx->bit_rate = fmt->bps;//bps; //比特率(调节这个大小可以改变编码后视频的质量)
-    h264codec_ctx->framerate = (AVRational){12, 1};
-    h264codec_ctx->gop_size= 24;
+    h264codec_ctx->framerate = (AVRational){fmt->fps, 1};
+    h264codec_ctx->gop_size= fmt->fps * 3;
     h264codec_ctx->qmin = 10;
     h264codec_ctx->qmax = 51;
     h264codec_ctx->max_b_frames = 0;
@@ -242,7 +371,7 @@ void ffmpeg_video_encode(video_format *fmt)
                 {
                      DEBUG("Failed to encode!");
                 }
-                //h264_send_data((char *)packet->data, packet->size, cli_display.h264_udp);
+                h264_send_data((char *)packet->data, packet->size, fmt->fd);
             }
         }
         av_free_packet(packet);
@@ -298,7 +427,7 @@ void *thread_ffmpeg_audio_encode(void *param)
     pthread_attr_t st_attr;
     struct sched_param sched;
 
-    //rfb_display *vid = (rfb_display *)param;
+	audio_format *fmt = (audio_format *)param;
 
     //pthread_detach(pthread_self());
     ret = pthread_attr_init(&st_attr);
@@ -318,7 +447,7 @@ void *thread_ffmpeg_audio_encode(void *param)
     pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS,NULL);//立即退出
     //pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, NULL);//立即退出  PTHREAD_CANCEL_DEFERRED 
 
-    //ffmpeg_decode(vid);
+    ffmpeg_audio_encode(fmt);
     return (void *)0;
 }
 
@@ -335,12 +464,12 @@ void *thread_ffmpeg_video_encode(void *param)
     ret = pthread_attr_init(&st_attr);
     if(ret)
     {   
-        DEBUG("thread ffmpeg audio encode attr init warning ");
+        DEBUG("thread ffmpeg video encode attr init warning ");
     }   
     ret = pthread_attr_setschedpolicy(&st_attr, SCHED_FIFO);
     if(ret)
     {   
-        DEBUG("thread ffmpeg audio encode set SCHED_FIFO warning");
+        DEBUG("thread ffmpeg video encode set SCHED_FIFO warning");
     }   
     sched.sched_priority = SCHED_PRIORITY_ENCODE;
     ret = pthread_attr_setschedparam(&st_attr, &sched);
@@ -359,7 +488,7 @@ void *thread_ffmpeg_audio_decode(void *param)
     pthread_attr_t st_attr;
     struct sched_param sched;
 
-    //rfb_display *vid = (rfb_display *)param;
+	audio_format *fmt = (audio_format *)param;
 
     //pthread_detach(pthread_self());
     ret = pthread_attr_init(&st_attr);
@@ -389,18 +518,18 @@ void *thread_ffmpeg_video_decode(void *param)
     pthread_attr_t st_attr;
     struct sched_param sched;
 
-    //rfb_display *vid = (rfb_display *)param;
+	video_format *fmt = (video_format *)param;
 
     //pthread_detach(pthread_self());
     ret = pthread_attr_init(&st_attr);
     if(ret)
     {   
-        DEBUG("thread ffmpeg audio encode attr init warning ");
+        DEBUG("thread ffmpeg video encode attr init warning ");
     }   
     ret = pthread_attr_setschedpolicy(&st_attr, SCHED_FIFO);
     if(ret)
     {   
-        DEBUG("thread ffmpeg audio encode set SCHED_FIFO warning");
+        DEBUG("thread ffmpeg video encode set SCHED_FIFO warning");
     }   
     sched.sched_priority = SCHED_PRIORITY_DECODE;
     ret = pthread_attr_setschedparam(&st_attr, &sched);
@@ -409,6 +538,6 @@ void *thread_ffmpeg_video_decode(void *param)
     pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS,NULL);//立即退出
     //pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, NULL);//立即退出  PTHREAD_CANCEL_DEFERRED 
 
-    //ffmpeg_decode(vid);
+	ffmpeg_video_decode(fmt);
     return (void *)0;
 }

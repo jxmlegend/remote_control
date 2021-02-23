@@ -12,6 +12,7 @@ TOP_DIR := $(shell pwd)
 OBJ_DIR := $(TOP_DIR)/obj
 outdir := $(TOP_DIR)/bin
 QT_DIR := $(TOP_DIR)/qt_pro
+DLL_DIR := /c/project/qt/build-Testlld-mingw_4_8-Release/release/
 
 SDL_DIR := ./SDL/$(TARGET_ARCH)
 FFMPEG_DIR := ./ffmpeg/$(TARGET_ARCH)
@@ -39,7 +40,8 @@ qtobj = qt_window
 libobj = libScreenCast.dll.a
 
 mainobj = main.o socket.o frame.o packet.o version.o audio.o video.o avi_enc.o log.o crc.o rtspd.o rtp.o rtcp.o  \
-		mmap_cache.o alarm.o signals.o list.o dll.o pipe.o ffmpeg.o sdl.o client.o h264.o server.o tools.o inirw.o configs.o
+		mmap_cache.o alarm.o signals.o list.o dll.o pipe.o ffmpeg.o sdl.o client.o h264.o server.o tools.o inirw.o configs.o \
+		queue.o control.o
 
 cppobj = 
 
@@ -60,7 +62,7 @@ CFLAGS += -lX11 -lpthread  -lXtst  -lXext -lXinerama -lXrandr -lXfixes -lXdamage
 else ifeq ($(TARGET_ARCH), x86)
 CFLAGS += -lmingw32 -lm -lws2_32 -lpthreadGC2 -lgdi32 
 else ifeq ($(TARGET_ARCH), x64)
-CFLAGS += -lpthread -lX11 -lXext -lXrandr
+CFLAGS += -lpthread -lX11 -lXext -lXrandr -lXtst   -lXfixes
 endif
 
 ifeq ($(DISPLAY), QT)
@@ -100,6 +102,7 @@ ifeq ($(TARGET_ARCH), x86)
 	$(CP) ./lib/*.dll $(outdir)
 	$(CP) ./$(FFMPEG_DIR)/bin/*.dll $(outdir)
 	$(CP) ./$(SDL_DIR)/bin/*.dll $(outdir)
+	$(CP) ./$(outdir)/$(dllobj) $(DLL_DIR)
 endif
 
 dll:$(dllobj)

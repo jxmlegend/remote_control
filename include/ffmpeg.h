@@ -9,23 +9,29 @@
 #include <libavutil/opt.h>
 #include <libavutil/imgutils.h>
 #include <libswscale/swscale.h>
+#include <SDL2/SDL.h>
 
 typedef struct video_format
 {
-	int t;
+	int32_t fd;
+	uint8_t chn;
 	uint8_t draw_mouse;
 	uint8_t fps;
+	uint16_t quality;
+	uint8_t model;		//PLAY CONTROL
 	uint32_t width;
 	uint32_t height;
 	uint32_t bps;	
-	
-
+	uint32_t code;
+	SDL_Rect rect;
 }video_format;
 
 
 typedef struct audio_format
 {
-	int t;
+	uint8_t chn;
+	int32_t fd;
+	uint32_t code;
 
 }audio_format;
 

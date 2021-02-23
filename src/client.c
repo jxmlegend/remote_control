@@ -1,14 +1,16 @@
 #include "base.h"
 #include "client.h"
+#include "rtsp.h"
 #include "server.h"
 
 static int server_s = -1;
-static pthread_t pthread_tcp, pthread_encode_video, pthread_audio;
+static pthread_t pthread_tcp;
 
 void *thread_ffmpeg_audio_encode(void *param);
 void *thread_ffmpeg_video_encode(void *param);
 
 struct client m_client;
+struct rtsp_cli m_rtsp;
 
 void exit_client()
 {
@@ -18,11 +20,6 @@ void exit_client()
     DEBUG("pthread_exit %d tcp", (int)tret);
 }
 
-static int recv_done(struct client *cli)
-{   
-
-	return SUCCESS;
-}
 
 int send_done(struct client *cli)
 {   
@@ -32,7 +29,21 @@ int send_done(struct client *cli)
     return send_request(cli);
 }
 
-int send_control(struct client *cli, int code)
+static int recv_done(struct client *cli)
+{   
+    if(cli->status != READY)
+	{
+	    if(m_rtsp.is_running)
+		{
+			rtspd_chn_stop(&m_rtsp);
+			close_fd(m_rtsp.video_fmt.fd);
+			m_rtsp.video_fmt.fd = -1;
+		}	
+	}
+	return send_done(cli);
+}
+
+int send_control(struct client *cli)
 {   
     cli->send_size = sizeof(struct request);
     cli->send_buf = (unsigned char *)malloc(cli->send_size);
@@ -41,7 +52,7 @@ int send_control(struct client *cli, int code)
 
     struct request *req = (struct request *)cli->send_buf;
 
-    req->code = code;
+    req->code = 200;
     cli->status = CONTROL;
     set_request_head(cli->send_head, 0, CONTROL_MSG, cli->send_size);
     return send_request(cli);
@@ -50,26 +61,45 @@ int send_control(struct client *cli, int code)
 static int recv_control(struct client *cli)
 {   
 	int ret;
-	void *tret;
-    if(cli->status != READY)
+    if(m_rtsp.is_running)
 	{
-		pthread_cancel(pthread_encode_video);
-    	pthread_join(pthread_encode_video, &tret);  //等待线程同步
+		return ERROR;
+		//rtspd_chn_stop(&m_rtsp);
+		//close_fd(m_rtsp.fd);
+		//m_rtsp_fd = -1;
 	}
-
     rtp_format *fmt = (rtp_format *)cli->recv_buf;
+	//memcpy(&m_rtsp.video_fmt, &(fmt->video_fmt), sizeof(video_format));
 
-	DEBUG("fmt->width %d fmt->video_code %d fmt->control_flag %d", fmt->width, fmt->video_code, fmt->control_flag);
-	ret = pthread_create(&pthread_encode_video, NULL, thread_ffmpeg_video_encode, NULL);
+
+	m_rtsp.video_fmt.width = fmt->video_fmt.width;
+	m_rtsp.video_fmt.height = fmt->video_fmt.height;
+	m_rtsp.video_fmt.fps = fmt->video_fmt.fps;
+	m_rtsp.video_fmt.bps = fmt->video_fmt.bps;
+	m_rtsp.video_fmt.draw_mouse = 0;
+	m_rtsp.video_fmt.fd = create_udp_client(server_ip, fmt->video_port);
+
+	vids_width = fmt->video_fmt.width;
+	vids_height = fmt->video_fmt.height;
+	
+	if(m_rtsp.video_fmt.fd == INVALID_SOCKET)
+	{
+		DEBUG("udp socket connection ip %s port %d error", server_ip, fmt->video_port);
+		return ERROR;
+	}	
+	//cli->audio_fmt.code = 0;
+	ret = pthread_create(&m_rtsp.pthread_video_decode, NULL, thread_ffmpeg_video_encode, &m_rtsp.video_fmt);
 	if(ret != SUCCESS)
 	{
-
+		DEBUG("create thread encode video error");
+		return ERROR;
 	}
-	ret = send_control(cli, 200);
-	return SUCCESS;
+
+	m_rtsp.is_running = 1;
+	return send_control(cli);
 }
 
-int send_play(struct client *cli, int code)
+int send_play(struct client *cli)
 {   
     cli->send_size = sizeof(struct request);
     cli->send_buf = (unsigned char *)malloc(cli->send_size);
@@ -78,7 +108,7 @@ int send_play(struct client *cli, int code)
 
     struct request *req = (struct request *)cli->send_buf;
 
-    req->code = code;
+    req->code = 200;
     cli->status = PLAY;
     set_request_head(cli->send_head, 0, PLAY_MSG, cli->send_size);
     return send_request(cli);
@@ -87,29 +117,43 @@ int send_play(struct client *cli, int code)
 static int recv_play(struct client *cli)
 {   
 	int ret;
-	void *tret;
-    if(cli->status != READY)
+    if(m_rtsp.is_running)
 	{
-		pthread_cancel(pthread_encode_video);
-    	pthread_join(pthread_encode_video, &tret);  //等待线程同步
+		return ERROR;
+		//rtspd_chn_stop(&m_rtsp);
+		//close_fd(m_rtsp.fd);
+		//m_rtsp_fd = -1;
 	}
-
     rtp_format *fmt = (rtp_format *)cli->recv_buf;
 
-	DEBUG("fmt->width %d fmt->video_code %d fmt->control_flag %d", fmt->width, fmt->video_code, fmt->control_flag);
-	ret = pthread_create(&pthread_encode_video, NULL, thread_ffmpeg_video_encode, NULL);
+	//memcpy(&m_rtsp.video_fmt, &(fmt->video_fmt), sizeof(video_format));
+	//DEBUG("m_rtsp.video_fmt.width %d %d", m_rtsp.video_fmt.width, m_rtsp.video_fmt.height);
+	m_rtsp.video_fmt.width = fmt->video_fmt.width;
+	m_rtsp.video_fmt.height = fmt->video_fmt.height;
+	m_rtsp.video_fmt.fps = fmt->video_fmt.fps;
+	m_rtsp.video_fmt.bps = fmt->video_fmt.bps;
+	
+	m_rtsp.video_fmt.draw_mouse = 0;
+	m_rtsp.video_fmt.fd = create_udp_client(server_ip, fmt->video_port);
+	if(m_rtsp.video_fmt.fd == INVALID_SOCKET)
+	{
+		DEBUG("udp socket connection ip %s port %d error", server_ip, fmt->video_port);
+		return ERROR;
+	}	
+	//cli->audio_fmt.code = 0;
+	ret = pthread_create(&m_rtsp.pthread_video_decode, NULL, thread_ffmpeg_video_encode, &m_rtsp.video_fmt);
 	if(ret != SUCCESS)
 	{
-
+		DEBUG("create thread encode video error");
+		return ERROR;
 	}
-	ret = send_play(cli, 200);
-	return SUCCESS;
+	m_rtsp.is_running = 1;
+	return send_play(cli);
 }
 
 static int recv_options(struct client *cli)
 {
 	struct request *req = (struct request *)cli->recv_buf;
-	DEBUG("option code %d", req->code);
 	if(req->code == 200)
 	{
 		cli->status = READY;
@@ -125,21 +169,23 @@ static int recv_options(struct client *cli)
 static int send_options(struct client *cli)
 {   
 	/* video format audio format ffmpeg code option yuv rgb width, height  */
-	cli->send_size = sizeof(rtp_format) + 1;
-	cli->send_buf = malloc(cli->send_size);
-	if(!cli->send_buf)
-		return ERROR;
 
-	rtp_format *fmt = (rtp_format *)cli->send_buf;
-	
-	fmt->width = screen_width;
-	fmt->height = screen_width;
-	fmt->video_code = H264;
-	fmt->audio_code = PCM;
-	fmt->fps = 12;
-	fmt->bps = 400000;
+    int ret;
+    cli->send_size = sizeof(rtp_format) + 1;
+    cli->send_buf = malloc(cli->send_size);
+    if(!cli->send_buf)
+        return ERROR;
 
-   	set_request_head(cli->send_head, 0, OPTIONS_MSG, cli->send_size);
+    rtp_format *fmt = (rtp_format *)cli->send_buf;
+
+    fmt->video_fmt.width = screen_width;
+    fmt->video_fmt.height = screen_height;
+    fmt->video_fmt.fps = 12;
+    fmt->video_fmt.bps = 200000;
+
+    fmt->video_port = -1;
+
+    set_request_head(cli->send_head, 0, OPTIONS_MSG, cli->send_size);
     return send_request(cli);
 }
 
@@ -147,7 +193,6 @@ static int recv_login(struct client *cli)
 {
 	int ret;
 	struct request *req = (struct request *)cli->recv_buf;
-	DEBUG("recv_login");
 	if(req->code == 200)
 	{
 		return send_options(cli);	
@@ -171,6 +216,7 @@ static int send_login(struct client *cli)
 		return ERROR;	
 
 	sprintf(cli->send_buf, VERSIONFORMAT, client_major, client_minor);
+	DEBUG("cli->send_buf %s", cli->send_buf);
    	set_request_head(cli->send_head, 0, LOGIN_MSG, cli->send_size);
     return send_request(cli);
 }
@@ -178,7 +224,6 @@ static int send_login(struct client *cli)
 int process_client_msg(struct client *cli)
 {
     int ret;
-    DEBUG("read_msg_order(cli->recv_head) %d", read_msg_order(cli->recv_head));
     switch(read_msg_order(cli->recv_head))
     {   
         /* pipe msg */
@@ -200,10 +245,20 @@ int process_client_msg(struct client *cli)
         case DONE_MSG:
             ret = recv_done(cli);
             break;
+	    case MOUSE_MSG:
+			if(cli->status == CONTROL)
+				simulate_mouse(cli->recv_buf);
+			ret = SUCCESS;
+			break;
+		case KEYBD_MSG:
+			if(cli->status == CONTROL)
+				simulate_keyboard(cli->recv_buf);
+			ret = SUCCESS;
+			break;
         default:
+    		ret = ERROR;
             break;
     }
-    ret = SUCCESS;
     return ret;
 }
 
@@ -220,7 +275,7 @@ static void tcp_loop(int sockfd)
 
     FD_ZERO(&allset);
     FD_SET(sockfd, &allset);
-    FD_SET(pipe_tcp[0], &allset);
+    //FD_SET(pipe_tcp[0], &allset);
 
     maxfd = maxfd > sockfd ? maxfd : sockfd;
     maxfd = maxfd > pipe_tcp[0] ? maxfd : pipe_tcp[0];
@@ -232,7 +287,6 @@ static void tcp_loop(int sockfd)
 	struct client pipe_cli = {0};
 	pipe_cli.fd = pipe_tcp[0];
 	
-	DEBUG("sockfd %d m_client %d", sockfd, m_client.fd);
     for(;;)
     {    
         tv.tv_sec = 1; 
@@ -319,7 +373,7 @@ static void tcp_loop(int sockfd)
 						DEBUG("process_msg error");
 						break;
                     }
-                    memset(current->recv_buf, 0, HEAD_LEN);
+                    memset(current->recv_head, 0, HEAD_LEN);
                     current->data_size = 0;
                     current->pos = 0;
                     if(current->recv_buf)
@@ -382,6 +436,7 @@ int init_client()
 		return ERROR;
 	}
 	m_client.fd = server_s;
+	memset(&m_rtsp, 0, sizeof(struct rtsp_cli));
 
 	ret = pthread_create(&pthread_tcp, NULL, thread_tcp, &server_s);
 	if(SUCCESS != ret)
