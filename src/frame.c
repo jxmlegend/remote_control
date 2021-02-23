@@ -2,7 +2,6 @@
 #include "base.h"
 #include "frame.h"
 
-
 /* 获取一个可写的Frame写入 */
 static Frame *frame_queue_peek_writable(FrameQueue *f)
 {
