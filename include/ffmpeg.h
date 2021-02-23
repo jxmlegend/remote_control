@@ -23,6 +23,9 @@ typedef struct video_format
 	uint32_t height;
 	uint32_t bps;	
 	uint32_t code;
+	
+	QUEUE vids_queue;
+
 	SDL_Rect rect;
 }video_format;
 
@@ -33,6 +36,7 @@ typedef struct audio_format
 	int32_t fd;
 	uint32_t code;
 
+	QUEUE audio_queue;
 }audio_format;
 
 

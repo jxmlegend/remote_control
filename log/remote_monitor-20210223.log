@@ -1,0 +1,5 @@
+[23/Feb/2021:14:48:39 ] :File: ./src/configs.c, Line: 00050:  
+programe client: 
+ server_ip 192.169.27.196, server_port 22000, window_flag 1, default_fps 12
+[23/Feb/2021:14:48:39 ] :File: ./src/sdl.c, Line: 00636:  SDL_ttf open ttf dir: ./font/msyh.ttf error
+[23/Feb/2021:14:48:39 ] :File: ./src/main.c, Line: 00113:  init client

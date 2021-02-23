@@ -11,8 +11,6 @@ pthread_mutex_t rtspd_mutex;
 //struct rtsp_buffer *rtsp[MAX_CONN];
 struct rtsp_cli *rtsp;
 
-QUEUE *vids_queue;
-QUEUE *audio_queue;
 
 void *thread_ffmpeg_video_decode(void *param);
 void *thread_ffmpeg_audio_decode(void *param);
@@ -573,8 +571,6 @@ int free_rtspd()
 {
     int i;
     void *tret;
-    if(vids_queue)
-        free(vids_queue);
 
     for(i = 0; i < max_conn; i++)
     {
@@ -595,6 +591,7 @@ int free_rtspd()
     rtsp = NULL;
 }
 
+#if 0
 void rtspd_chn_stop(struct rtsp_cli *chn)
 {
 	void *tret;
@@ -613,7 +610,6 @@ void rtspd_chn_stop(struct rtsp_cli *chn)
     chn->conn_status = 0;
 }
 
-#if 0
 int rtspd_chn_stop(int chn)
 {
     void *tret;
@@ -630,13 +626,40 @@ int rtspd_chn_stop(int chn)
 }
 #endif
 
+int free_rtsp_chn(int chn)
+{
 
-int rtspd_chn_init()
+}
+
+/* pthread create */
+int start_rtsp_chn(int chn)
+{
+
+}
+
+/* pthread cancel */
+int stop_rtsp_chn(int chn)
+{
+
+}
+
+/* cli = NULL  */
+int close_rtsp_chn(int chn)
+{
+	//stop_rtsp_chn();
+	
+}
+
+int init_rtsp_chn()
 {
     int i, j, ret, chn;
     max_conn = window_size * window_size;
     rtsp = (struct rtsp_cli *)malloc(sizeof(struct rtsp_cli) * max_conn);
-    vids_queue = (QUEUE *)malloc(sizeof(QUEUE) * max_conn);
+    if(!rtsp)
+        return ERROR;
+
+    memset(rtsp, 0, sizeof(struct rtsp_cli) * max_conn);
+
     get_window_size(&screen_width, &screen_height);
 
     vids_width = screen_width / window_size;
@@ -644,11 +667,6 @@ int rtspd_chn_init()
 
     DEBUG("screen_width %d screen_height %d vids_width %d vids_height %d", screen_width, screen_height,
         vids_width, vids_height);
-
-    if(!rtsp || !vids_queue)
-        return ERROR;
-
-    memset(rtsp, 0, sizeof(struct rtsp_cli) * max_conn);
 
     for(i = 0; i < window_size; i++)
     {
@@ -663,12 +681,11 @@ int rtspd_chn_init()
             rtsp[chn].video_fmt.rect.h = vids_height;
             rtsp[chn].video_port = chn + h264_port + 1;
 
-
             //rtsp[chn].audio_port = chn + h264_port + 1 + 50;
             rtsp[chn].vids_buf = (uint8_t *)malloc(MAX_VIDSBUFSIZE * sizeof(unsigned char));
             if(!rtsp[chn].vids_buf)
                 return ERROR;
-            init_queue(&(vids_queue[chn]), rtsp[chn].vids_buf, MAX_VIDSBUFSIZE);
+            init_queue(&rtsp[chn].video_fmt.vids_queue, rtsp[chn].vids_buf, MAX_VIDSBUFSIZE);
 
             rtsp[chn].frame_buf = (uint8_t *)malloc(MAX_BUFLEN);
             rtsp[chn].frame_pos = 0;

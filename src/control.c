@@ -30,9 +30,8 @@ void simulate_mouse(rfb_pointevent *point)
     }
     if(point->mask & MOUSE_RIGHT_UP)
     {
-        flags |= MOUSEEVENTF_RIGHTUP|;
+        flags |= MOUSEEVENTF_RIGHTUP;
     }
-
     if(point->wheel)
     {
         flags |= MOUSEEVENTF_WHEEL;
@@ -51,7 +50,7 @@ void simulate_mouse(rfb_pointevent *point)
 	
 }
 
-static void simulate_keyboard(rfb_keyevent *key)
+void simulate_keyboard(rfb_keyevent *key)
 {
 	key->scan_code = 0;
 	/* a-z */

@@ -71,6 +71,7 @@ typedef struct rtsp_cli
     struct video_format video_fmt;
     struct audio_format audio_fmt;
 
+	
     uint8_t *frame_buf;
     uint32_t frame_pos;
     uint32_t frame_size;

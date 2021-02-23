@@ -1,0 +1,427 @@
+[23/Feb/2021:14:49:04 ] :File: ./src/configs.c, Line: 00040:  
+programe server: 
+ client_port 22000, control_port 23000, h264_port 23001, window_flag 1, window_size 2,
+[23/Feb/2021:14:49:04 ] :File: ./src/sdl.c, Line: 00636:  SDL_ttf open ttf dir: ./font/msyh.ttf error
+[23/Feb/2021:14:49:04 ] :File: ./src/main.c, Line: 00108:  init server 
+[23/Feb/2021:14:49:04 ] :File: ./src/server.c, Line: 00766:  
+YZY REMOTE CONTROL SERVER VERSION :
+
+
+[23/Feb/2021:14:49:04 ] :File: ./src/rtspd.c, Line: 00646:  screen_width 1280 screen_height 720 vids_width 640 vids_height 360
+[23/Feb/2021:14:49:04 ] :File: ./src/server.c, Line: 00787:  rtsp chn SUCCESS
+[23/Feb/2021:14:49:04 ] :File: ./src/socket.c, Line: 00408:  tcp bind port 22000
+[23/Feb/2021:14:49:04 ] :File: ./src/server.c, Line: 00796:  create tcp sockfd SUCCESS
+[23/Feb/2021:14:49:04 ] :File: ./src/server.c, Line: 00804:  clients malloc 1024 SUCCESS
+[23/Feb/2021:14:49:04 ] :File: ./src/server.c, Line: 00815:  create thread tcp SUCCESS
+[23/Feb/2021:14:49:04 ] :File: ./src/server.c, Line: 00649:  thread server tcp set SCHED_FIFO warning
+[23/Feb/2021:14:49:04 ] :File: ./src/server.c, Line: 00359:  maxfd 736 listenfd 736 pipe_tcp[0] 0
+[23/Feb/2021:14:49:04 ] :File: ./src/server.c, Line: 00748:  thread server tcp set SCHED_FIFO warning
+[23/Feb/2021:14:49:04 ] :File: ./src/sdl.c, Line: 00661:  thread sdl set SCHED_FIFO warning
+[23/Feb/2021:14:49:10 ] :File: ./src/configs.c, Line: 00040:  
+programe server: 
+ client_port 22000, control_port 23000, h264_port 23001, window_flag 1, window_size 2,
+[23/Feb/2021:14:49:10 ] :File: ./src/sdl.c, Line: 00636:  SDL_ttf open ttf dir: ./font/msyh.ttf error
+[23/Feb/2021:14:49:10 ] :File: ./src/main.c, Line: 00108:  init server 
+[23/Feb/2021:14:49:10 ] :File: ./src/server.c, Line: 00766:  
+YZY REMOTE CONTROL SERVER VERSION :
+
+
+[23/Feb/2021:14:49:10 ] :File: ./src/rtspd.c, Line: 00646:  screen_width 1280 screen_height 720 vids_width 640 vids_height 360
+[23/Feb/2021:14:49:10 ] :File: ./src/server.c, Line: 00787:  rtsp chn SUCCESS
+[23/Feb/2021:14:49:10 ] :File: ./src/socket.c, Line: 00408:  tcp bind port 22000
+[23/Feb/2021:14:49:10 ] :File: ./src/server.c, Line: 00796:  create tcp sockfd SUCCESS
+[23/Feb/2021:14:49:10 ] :File: ./src/server.c, Line: 00804:  clients malloc 1024 SUCCESS
+[23/Feb/2021:14:49:10 ] :File: ./src/server.c, Line: 00815:  create thread tcp SUCCESS
+[23/Feb/2021:14:49:10 ] :File: ./src/server.c, Line: 00649:  thread server tcp set SCHED_FIFO warning
+[23/Feb/2021:14:49:10 ] :File: ./src/server.c, Line: 00748:  thread server tcp set SCHED_FIFO warning
+[23/Feb/2021:14:49:10 ] :File: ./src/server.c, Line: 00359:  maxfd 704 listenfd 704 pipe_tcp[0] 0
+[23/Feb/2021:14:49:10 ] :File: ./src/sdl.c, Line: 00661:  thread sdl set SCHED_FIFO warning
+[23/Feb/2021:14:51:17 ] :File: ./src/configs.c, Line: 00040:  
+programe server: 
+ client_port 22000, control_port 23000, h264_port 23001, window_flag 1, window_size 2,
+[23/Feb/2021:14:51:17 ] :File: ./src/socket.c, Line: 00408:  tcp bind port 22001
+[23/Feb/2021:14:51:17 ] :File: ./src/socket.c, Line: 00408:  tcp bind port 22002
+[23/Feb/2021:14:51:17 ] :File: ./src/socket.c, Line: 00408:  tcp bind port 22003
+[23/Feb/2021:14:51:17 ] :File: ./src/sdl.c, Line: 00636:  SDL_ttf open ttf dir: ./font/msyh.ttf error
+[23/Feb/2021:14:51:17 ] :File: ./src/main.c, Line: 00108:  init server 
+[23/Feb/2021:14:51:17 ] :File: ./src/server.c, Line: 00766:  
+YZY REMOTE CONTROL SERVER VERSION :
+
+
+[23/Feb/2021:14:51:17 ] :File: ./src/rtspd.c, Line: 00646:  screen_width 1280 screen_height 720 vids_width 640 vids_height 360
+[23/Feb/2021:14:51:17 ] :File: ./src/server.c, Line: 00787:  rtsp chn SUCCESS
+[23/Feb/2021:14:51:17 ] :File: ./src/socket.c, Line: 00408:  tcp bind port 22000
+[23/Feb/2021:14:51:17 ] :File: ./src/server.c, Line: 00796:  create tcp sockfd SUCCESS
+[23/Feb/2021:14:51:17 ] :File: ./src/server.c, Line: 00804:  clients malloc 1024 SUCCESS
+[23/Feb/2021:14:51:17 ] :File: ./src/server.c, Line: 00815:  create thread tcp SUCCESS
+[23/Feb/2021:14:51:17 ] :File: ./src/server.c, Line: 00748:  thread server tcp set SCHED_FIFO warning
+[23/Feb/2021:14:51:17 ] :File: ./src/server.c, Line: 00649:  thread server tcp set SCHED_FIFO warning
+[23/Feb/2021:14:51:17 ] :File: ./src/sdl.c, Line: 00661:  thread sdl set SCHED_FIFO warning
+[23/Feb/2021:14:51:17 ] :File: ./src/server.c, Line: 00359:  maxfd 776 listenfd 776 pipe_tcp[0] 736
+[23/Feb/2021:14:51:29 ] :File: ./src/configs.c, Line: 00040:  
+programe server: 
+ client_port 22000, control_port 23000, h264_port 23001, window_flag 1, window_size 2,
+[23/Feb/2021:14:51:29 ] :File: ./src/socket.c, Line: 00408:  tcp bind port 22001
+[23/Feb/2021:14:51:29 ] :File: ./src/socket.c, Line: 00408:  tcp bind port 22002
+[23/Feb/2021:14:51:29 ] :File: ./src/socket.c, Line: 00408:  tcp bind port 22003
+[23/Feb/2021:14:51:29 ] :File: ./src/sdl.c, Line: 00636:  SDL_ttf open ttf dir: ./font/msyh.ttf error
+[23/Feb/2021:14:51:29 ] :File: ./src/main.c, Line: 00108:  init server 
+[23/Feb/2021:14:51:29 ] :File: ./src/server.c, Line: 00766:  
+YZY REMOTE CONTROL SERVER VERSION :
+
+
+[23/Feb/2021:14:51:29 ] :File: ./src/rtspd.c, Line: 00646:  screen_width 1280 screen_height 720 vids_width 640 vids_height 360
+[23/Feb/2021:14:51:29 ] :File: ./src/server.c, Line: 00787:  rtsp chn SUCCESS
+[23/Feb/2021:14:51:29 ] :File: ./src/socket.c, Line: 00408:  tcp bind port 22000
+[23/Feb/2021:14:51:29 ] :File: ./src/server.c, Line: 00796:  create tcp sockfd SUCCESS
+[23/Feb/2021:14:51:29 ] :File: ./src/server.c, Line: 00804:  clients malloc 1024 SUCCESS
+[23/Feb/2021:14:51:29 ] :File: ./src/server.c, Line: 00815:  create thread tcp SUCCESS
+[23/Feb/2021:14:51:29 ] :File: ./src/server.c, Line: 00649:  thread server tcp set SCHED_FIFO warning
+[23/Feb/2021:14:51:29 ] :File: ./src/server.c, Line: 00359:  maxfd 716 listenfd 716 pipe_tcp[0] 688
+[23/Feb/2021:14:51:29 ] :File: ./src/server.c, Line: 00748:  thread server tcp set SCHED_FIFO warning
+[23/Feb/2021:14:51:29 ] :File: ./src/sdl.c, Line: 00661:  thread sdl set SCHED_FIFO warning
+[23/Feb/2021:15:03:58 ] :File: ./src/configs.c, Line: 00040:  
+programe server: 
+ client_port 22000, control_port 23000, h264_port 23001, window_flag 1, window_size 2,
+[23/Feb/2021:15:03:58 ] :File: ./src/socket.c, Line: 00408:  tcp bind port 22001
+[23/Feb/2021:15:03:58 ] :File: ./src/socket.c, Line: 00408:  tcp bind port 22002
+[23/Feb/2021:15:03:58 ] :File: ./src/socket.c, Line: 00408:  tcp bind port 22003
+[23/Feb/2021:15:03:58 ] :File: ./src/sdl.c, Line: 00636:  SDL_ttf open ttf dir: ./font/msyh.ttf error
+[23/Feb/2021:15:03:58 ] :File: ./src/main.c, Line: 00108:  init server 
+[23/Feb/2021:15:03:58 ] :File: ./src/server.c, Line: 00766:  
+YZY REMOTE CONTROL SERVER VERSION :
+
+
+[23/Feb/2021:15:03:58 ] :File: ./src/rtspd.c, Line: 00646:  screen_width 1280 screen_height 720 vids_width 640 vids_height 360
+[23/Feb/2021:15:03:58 ] :File: ./src/server.c, Line: 00787:  rtsp chn SUCCESS
+[23/Feb/2021:15:03:58 ] :File: ./src/socket.c, Line: 00408:  tcp bind port 22000
+[23/Feb/2021:15:03:58 ] :File: ./src/server.c, Line: 00796:  create tcp sockfd SUCCESS
+[23/Feb/2021:15:03:58 ] :File: ./src/server.c, Line: 00804:  clients malloc 1024 SUCCESS
+[23/Feb/2021:15:03:58 ] :File: ./src/server.c, Line: 00815:  create thread tcp SUCCESS
+[23/Feb/2021:15:03:58 ] :File: ./src/server.c, Line: 00748:  thread server tcp set SCHED_FIFO warning
+[23/Feb/2021:15:03:58 ] :File: ./src/server.c, Line: 00649:  thread server tcp set SCHED_FIFO warning
+[23/Feb/2021:15:03:58 ] :File: ./src/server.c, Line: 00359:  maxfd 736 listenfd 736 pipe_tcp[0] 240
+[23/Feb/2021:15:03:58 ] :File: ./src/sdl.c, Line: 00661:  thread sdl set SCHED_FIFO warning
+[23/Feb/2021:15:04:06 ] :File: ./src/configs.c, Line: 00040:  
+programe server: 
+ client_port 22000, control_port 23000, h264_port 23001, window_flag 1, window_size 2,
+[23/Feb/2021:15:04:06 ] :File: ./src/socket.c, Line: 00408:  tcp bind port 22001
+[23/Feb/2021:15:04:06 ] :File: ./src/socket.c, Line: 00408:  tcp bind port 22002
+[23/Feb/2021:15:04:06 ] :File: ./src/socket.c, Line: 00408:  tcp bind port 22003
+[23/Feb/2021:15:04:06 ] :File: ./src/sdl.c, Line: 00636:  SDL_ttf open ttf dir: ./font/msyh.ttf error
+[23/Feb/2021:15:04:06 ] :File: ./src/main.c, Line: 00108:  init server 
+[23/Feb/2021:15:04:06 ] :File: ./src/server.c, Line: 00766:  
+YZY REMOTE CONTROL SERVER VERSION :
+
+
+[23/Feb/2021:15:04:06 ] :File: ./src/rtspd.c, Line: 00646:  screen_width 1280 screen_height 720 vids_width 640 vids_height 360
+[23/Feb/2021:15:04:06 ] :File: ./src/server.c, Line: 00787:  rtsp chn SUCCESS
+[23/Feb/2021:15:04:06 ] :File: ./src/socket.c, Line: 00408:  tcp bind port 22000
+[23/Feb/2021:15:04:06 ] :File: ./src/server.c, Line: 00796:  create tcp sockfd SUCCESS
+[23/Feb/2021:15:04:06 ] :File: ./src/server.c, Line: 00804:  clients malloc 1024 SUCCESS
+[23/Feb/2021:15:04:06 ] :File: ./src/server.c, Line: 00815:  create thread tcp SUCCESS
+[23/Feb/2021:15:06:56 ] :File: ./src/configs.c, Line: 00040:  
+programe server: 
+ client_port 22000, control_port 23000, h264_port 23001, window_flag 1, window_size 2,
+[23/Feb/2021:15:06:56 ] :File: ./src/socket.c, Line: 00408:  tcp bind port 22001
+[23/Feb/2021:15:06:56 ] :File: ./src/socket.c, Line: 00408:  tcp bind port 22002
+[23/Feb/2021:15:06:56 ] :File: ./src/socket.c, Line: 00408:  tcp bind port 22003
+[23/Feb/2021:15:06:56 ] :File: ./src/sdl.c, Line: 00636:  SDL_ttf open ttf dir: ./font/msyh.ttf error
+[23/Feb/2021:15:06:56 ] :File: ./src/main.c, Line: 00108:  init server 
+[23/Feb/2021:15:06:56 ] :File: ./src/server.c, Line: 00766:  
+YZY REMOTE CONTROL SERVER VERSION :
+
+
+[23/Feb/2021:15:06:56 ] :File: ./src/rtspd.c, Line: 00646:  screen_width 1280 screen_height 720 vids_width 640 vids_height 360
+[23/Feb/2021:15:06:56 ] :File: ./src/server.c, Line: 00787:  rtsp chn SUCCESS
+[23/Feb/2021:15:06:56 ] :File: ./src/socket.c, Line: 00408:  tcp bind port 22000
+[23/Feb/2021:15:06:56 ] :File: ./src/server.c, Line: 00796:  create tcp sockfd SUCCESS
+[23/Feb/2021:15:06:56 ] :File: ./src/server.c, Line: 00804:  clients malloc 1024 SUCCESS
+[23/Feb/2021:15:06:56 ] :File: ./src/server.c, Line: 00815:  create thread tcp SUCCESS
+[23/Feb/2021:15:06:56 ] :File: ./src/server.c, Line: 00832:  create thread sdl SUCCESS
+[23/Feb/2021:15:06:56 ] :File: ./src/server.c, Line: 00649:  thread server tcp set SCHED_FIFO warning
+[23/Feb/2021:15:06:56 ] :File: ./src/server.c, Line: 00748:  thread server tcp set SCHED_FIFO warning
+[23/Feb/2021:15:06:56 ] :File: ./src/sdl.c, Line: 00661:  thread sdl set SCHED_FIFO warning
+[23/Feb/2021:15:06:56 ] :File: ./src/server.c, Line: 00359:  maxfd 764 listenfd 764 pipe_tcp[0] 724
+[23/Feb/2021:15:06:56 ] :File: ./src/sdl.c, Line: 00557:  Initialized direct3d renderer.
+[23/Feb/2021:15:09:07 ] :File: ./src/configs.c, Line: 00040:  
+programe server: 
+ client_port 22000, control_port 23000, h264_port 23001, window_flag 1, window_size 2,
+[23/Feb/2021:15:09:07 ] :File: ./src/socket.c, Line: 00407:  tcp bind port 22001
+[23/Feb/2021:15:09:07 ] :File: ./src/socket.c, Line: 00407:  tcp bind port 22002
+[23/Feb/2021:15:09:07 ] :File: ./src/socket.c, Line: 00407:  tcp bind port 22003
+[23/Feb/2021:15:09:07 ] :File: ./src/sdl.c, Line: 00640:  SDL_ttf open ttf dir: ./font/msyh.ttf error
+[23/Feb/2021:15:09:07 ] :File: ./src/main.c, Line: 00108:  init server 
+[23/Feb/2021:15:09:07 ] :File: ./src/server.c, Line: 00767:  
+YZY REMOTE CONTROL SERVER VERSION :
+
+
+[23/Feb/2021:15:09:07 ] :File: ./src/rtspd.c, Line: 00646:  screen_width 1280 screen_height 720 vids_width 640 vids_height 360
+[23/Feb/2021:15:09:07 ] :File: ./src/server.c, Line: 00788:  rtsp chn SUCCESS
+[23/Feb/2021:15:09:07 ] :File: ./src/socket.c, Line: 00407:  tcp bind port 22000
+[23/Feb/2021:15:09:07 ] :File: ./src/server.c, Line: 00797:  create tcp sockfd SUCCESS
+[23/Feb/2021:15:09:07 ] :File: ./src/server.c, Line: 00805:  clients malloc 1024 SUCCESS
+[23/Feb/2021:15:09:07 ] :File: ./src/server.c, Line: 00816:  create thread tcp SUCCESS
+[23/Feb/2021:15:09:07 ] :File: ./src/server.c, Line: 00833:  create thread sdl SUCCESS
+[23/Feb/2021:15:09:07 ] :File: ./src/server.c, Line: 00650:  thread server tcp set SCHED_FIFO warning
+[23/Feb/2021:15:09:07 ] :File: ./src/server.c, Line: 00749:  thread server tcp set SCHED_FIFO warning
+[23/Feb/2021:15:09:07 ] :File: ./src/sdl.c, Line: 00665:  thread sdl set SCHED_FIFO warning
+[23/Feb/2021:15:09:07 ] :File: ./src/server.c, Line: 00359:  maxfd 764 listenfd 764 pipe_tcp[0] 748
+[23/Feb/2021:15:09:07 ] :File: ./src/sdl.c, Line: 00561:  Initialized direct3d renderer.
+[23/Feb/2021:15:09:08 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:09:09 ] :File: ./src/sdl.c, Line: 00430:  area_id 0
+[23/Feb/2021:15:09:09 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:09:10 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:09:11 ] :File: ./src/sdl.c, Line: 00430:  area_id 0
+[23/Feb/2021:15:09:11 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:09:12 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:09:13 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:09:14 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:09:15 ] :File: ./src/sdl.c, Line: 00430:  area_id 0
+[23/Feb/2021:15:09:15 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:09:16 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:09:17 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:09:18 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:09:19 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:09:20 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:09:21 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:09:22 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:09:23 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:09:24 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:10:59 ] :File: ./src/configs.c, Line: 00040:  
+programe server: 
+ client_port 22000, control_port 23000, h264_port 23001, window_flag 1, window_size 2,
+[23/Feb/2021:15:10:59 ] :File: ./src/socket.c, Line: 00407:  tcp bind port 22001
+[23/Feb/2021:15:10:59 ] :File: ./src/socket.c, Line: 00407:  tcp bind port 22002
+[23/Feb/2021:15:10:59 ] :File: ./src/socket.c, Line: 00407:  tcp bind port 22003
+[23/Feb/2021:15:10:59 ] :File: ./src/sdl.c, Line: 00640:  SDL_ttf open ttf dir: ./font/msyh.ttf error
+[23/Feb/2021:15:10:59 ] :File: ./src/main.c, Line: 00108:  init server 
+[23/Feb/2021:15:10:59 ] :File: ./src/server.c, Line: 00778:  
+YZY REMOTE CONTROL SERVER VERSION :
+
+
+[23/Feb/2021:15:10:59 ] :File: ./src/rtspd.c, Line: 00646:  screen_width 1280 screen_height 720 vids_width 640 vids_height 360
+[23/Feb/2021:15:10:59 ] :File: ./src/server.c, Line: 00799:  rtsp chn SUCCESS
+[23/Feb/2021:15:10:59 ] :File: ./src/socket.c, Line: 00407:  tcp bind port 22000
+[23/Feb/2021:15:10:59 ] :File: ./src/server.c, Line: 00808:  create tcp sockfd SUCCESS
+[23/Feb/2021:15:10:59 ] :File: ./src/server.c, Line: 00816:  clients malloc 1024 SUCCESS
+[23/Feb/2021:15:10:59 ] :File: ./src/server.c, Line: 00827:  create thread tcp SUCCESS
+[23/Feb/2021:15:10:59 ] :File: ./src/server.c, Line: 00844:  create thread sdl SUCCESS
+[23/Feb/2021:15:10:59 ] :File: ./src/server.c, Line: 00661:  thread server tcp set SCHED_FIFO warning
+[23/Feb/2021:15:10:59 ] :File: ./src/server.c, Line: 00760:  thread server tcp set SCHED_FIFO warning
+[23/Feb/2021:15:10:59 ] :File: ./src/server.c, Line: 00359:  maxfd 760 listenfd 760 pipe_tcp[0] 720
+[23/Feb/2021:15:10:59 ] :File: ./src/sdl.c, Line: 00665:  thread sdl set SCHED_FIFO warning
+[23/Feb/2021:15:10:59 ] :File: ./src/sdl.c, Line: 00561:  Initialized direct3d renderer.
+[23/Feb/2021:15:11:00 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:11:00 ] :File: ./src/server.c, Line: 00383:  ret -1
+[23/Feb/2021:15:11:01 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:11:04 ] :File: ./src/sdl.c, Line: 00430:  area_id 0
+[23/Feb/2021:15:11:08 ] :File: ./src/sdl.c, Line: 00430:  area_id 0
+[23/Feb/2021:15:12:07 ] :File: ./src/configs.c, Line: 00040:  
+programe server: 
+ client_port 22000, control_port 23000, h264_port 23001, window_flag 1, window_size 2,
+[23/Feb/2021:15:12:07 ] :File: ./src/socket.c, Line: 00409:  tcp bind port 22001
+[23/Feb/2021:15:12:07 ] :File: ./src/socket.c, Line: 00409:  tcp bind port 22002
+[23/Feb/2021:15:12:07 ] :File: ./src/socket.c, Line: 00409:  tcp bind port 22003
+[23/Feb/2021:15:12:07 ] :File: ./src/sdl.c, Line: 00640:  SDL_ttf open ttf dir: ./font/msyh.ttf error
+[23/Feb/2021:15:12:07 ] :File: ./src/main.c, Line: 00108:  init server 
+[23/Feb/2021:15:12:07 ] :File: ./src/server.c, Line: 00768:  
+YZY REMOTE CONTROL SERVER VERSION :
+
+
+[23/Feb/2021:15:12:07 ] :File: ./src/rtspd.c, Line: 00646:  screen_width 1280 screen_height 720 vids_width 640 vids_height 360
+[23/Feb/2021:15:12:07 ] :File: ./src/server.c, Line: 00789:  rtsp chn SUCCESS
+[23/Feb/2021:15:12:07 ] :File: ./src/socket.c, Line: 00409:  tcp bind port 22000
+[23/Feb/2021:15:12:07 ] :File: ./src/server.c, Line: 00798:  create tcp sockfd SUCCESS
+[23/Feb/2021:15:12:07 ] :File: ./src/server.c, Line: 00806:  clients malloc 1024 SUCCESS
+[23/Feb/2021:15:12:07 ] :File: ./src/server.c, Line: 00817:  create thread tcp SUCCESS
+[23/Feb/2021:15:12:07 ] :File: ./src/server.c, Line: 00834:  create thread sdl SUCCESS
+[23/Feb/2021:15:12:07 ] :File: ./src/server.c, Line: 00651:  thread server tcp set SCHED_FIFO warning
+[23/Feb/2021:15:12:07 ] :File: ./src/sdl.c, Line: 00665:  thread sdl set SCHED_FIFO warning
+[23/Feb/2021:15:12:07 ] :File: ./src/server.c, Line: 00750:  thread server tcp set SCHED_FIFO warning
+[23/Feb/2021:15:12:07 ] :File: ./src/server.c, Line: 00359:  maxfd 752 listenfd 752 pipe_tcp[0] 724
+[23/Feb/2021:15:12:08 ] :File: ./src/sdl.c, Line: 00561:  Initialized direct3d renderer.
+[23/Feb/2021:15:12:08 ] :File: ./src/sdl.c, Line: 00430:  area_id 0
+[23/Feb/2021:15:12:08 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:12:09 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:12:10 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:12:11 ] :File: ./src/sdl.c, Line: 00430:  area_id 0
+[23/Feb/2021:15:12:11 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:12:12 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:12:13 ] :File: ./src/sdl.c, Line: 00430:  area_id 0
+[23/Feb/2021:15:12:13 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:12:14 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:12:15 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:12:16 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:12:17 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:12:44 ] :File: ./src/configs.c, Line: 00040:  
+programe server: 
+ client_port 22000, control_port 23000, h264_port 23001, window_flag 1, window_size 2,
+[23/Feb/2021:15:12:44 ] :File: ./src/socket.c, Line: 00409:  tcp bind port 22001
+[23/Feb/2021:15:12:44 ] :File: ./src/socket.c, Line: 00409:  tcp bind port 22002
+[23/Feb/2021:15:12:44 ] :File: ./src/socket.c, Line: 00409:  tcp bind port 22003
+[23/Feb/2021:15:12:44 ] :File: ./src/sdl.c, Line: 00640:  SDL_ttf open ttf dir: ./font/msyh.ttf error
+[23/Feb/2021:15:12:44 ] :File: ./src/main.c, Line: 00108:  init server 
+[23/Feb/2021:15:12:44 ] :File: ./src/server.c, Line: 00768:  
+YZY REMOTE CONTROL SERVER VERSION :
+
+
+[23/Feb/2021:15:12:44 ] :File: ./src/rtspd.c, Line: 00646:  screen_width 1280 screen_height 720 vids_width 640 vids_height 360
+[23/Feb/2021:15:12:44 ] :File: ./src/server.c, Line: 00789:  rtsp chn SUCCESS
+[23/Feb/2021:15:12:44 ] :File: ./src/socket.c, Line: 00409:  tcp bind port 22000
+[23/Feb/2021:15:12:44 ] :File: ./src/server.c, Line: 00798:  create tcp sockfd SUCCESS
+[23/Feb/2021:15:12:44 ] :File: ./src/server.c, Line: 00806:  clients malloc 1024 SUCCESS
+[23/Feb/2021:15:12:44 ] :File: ./src/server.c, Line: 00817:  create thread tcp SUCCESS
+[23/Feb/2021:15:12:44 ] :File: ./src/server.c, Line: 00834:  create thread sdl SUCCESS
+[23/Feb/2021:15:12:44 ] :File: ./src/server.c, Line: 00651:  thread server tcp set SCHED_FIFO warning
+[23/Feb/2021:15:12:44 ] :File: ./src/server.c, Line: 00359:  maxfd 764 listenfd 764 pipe_tcp[0] 724
+[23/Feb/2021:15:12:44 ] :File: ./src/sdl.c, Line: 00665:  thread sdl set SCHED_FIFO warning
+[23/Feb/2021:15:12:44 ] :File: ./src/server.c, Line: 00750:  thread server tcp set SCHED_FIFO warning
+[23/Feb/2021:15:12:44 ] :File: ./src/sdl.c, Line: 00561:  Initialized direct3d renderer.
+[23/Feb/2021:15:12:45 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:12:46 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:12:46 ] :File: ./src/sdl.c, Line: 00470:  send_pipe 
+[23/Feb/2021:15:12:47 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:12:47 ] :File: ./src/sdl.c, Line: 00470:  send_pipe 
+[23/Feb/2021:15:12:47 ] :File: ./src/sdl.c, Line: 00470:  send_pipe 
+[23/Feb/2021:15:12:48 ] :File: ./src/sdl.c, Line: 00470:  send_pipe 
+[23/Feb/2021:15:12:48 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:12:48 ] :File: ./src/sdl.c, Line: 00470:  send_pipe 
+[23/Feb/2021:15:12:48 ] :File: ./src/sdl.c, Line: 00470:  send_pipe 
+[23/Feb/2021:15:12:48 ] :File: ./src/sdl.c, Line: 00470:  send_pipe 
+[23/Feb/2021:15:12:49 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:12:49 ] :File: ./src/sdl.c, Line: 00430:  area_id 0
+[23/Feb/2021:15:12:49 ] :File: ./src/sdl.c, Line: 00470:  send_pipe 
+[23/Feb/2021:15:12:49 ] :File: ./src/sdl.c, Line: 00470:  send_pipe 
+[23/Feb/2021:15:12:50 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:12:51 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:12:52 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:12:53 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:12:54 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:12:55 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:12:56 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:12:57 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:12:58 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:12:59 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:13:00 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:13:01 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:13:02 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:13:48 ] :File: ./src/configs.c, Line: 00040:  
+programe server: 
+ client_port 22000, control_port 23000, h264_port 23001, window_flag 1, window_size 2,
+[23/Feb/2021:15:13:48 ] :File: ./src/socket.c, Line: 00409:  tcp bind port 22001
+[23/Feb/2021:15:13:48 ] :File: ./src/socket.c, Line: 00409:  tcp bind port 22002
+[23/Feb/2021:15:13:48 ] :File: ./src/socket.c, Line: 00409:  tcp bind port 22003
+[23/Feb/2021:15:13:48 ] :File: ./src/sdl.c, Line: 00640:  SDL_ttf open ttf dir: ./font/msyh.ttf error
+[23/Feb/2021:15:13:48 ] :File: ./src/main.c, Line: 00108:  init server 
+[23/Feb/2021:15:13:48 ] :File: ./src/server.c, Line: 00768:  
+YZY REMOTE CONTROL SERVER VERSION :
+
+
+[23/Feb/2021:15:13:48 ] :File: ./src/rtspd.c, Line: 00646:  screen_width 1280 screen_height 720 vids_width 640 vids_height 360
+[23/Feb/2021:15:13:48 ] :File: ./src/server.c, Line: 00789:  rtsp chn SUCCESS
+[23/Feb/2021:15:13:48 ] :File: ./src/socket.c, Line: 00409:  tcp bind port 22000
+[23/Feb/2021:15:13:48 ] :File: ./src/server.c, Line: 00798:  create tcp sockfd SUCCESS
+[23/Feb/2021:15:13:48 ] :File: ./src/server.c, Line: 00806:  clients malloc 1024 SUCCESS
+[23/Feb/2021:15:13:48 ] :File: ./src/server.c, Line: 00817:  create thread tcp SUCCESS
+[23/Feb/2021:15:13:48 ] :File: ./src/server.c, Line: 00834:  create thread sdl SUCCESS
+[23/Feb/2021:15:13:48 ] :File: ./src/server.c, Line: 00651:  thread server tcp set SCHED_FIFO warning
+[23/Feb/2021:15:13:48 ] :File: ./src/server.c, Line: 00359:  maxfd 764 listenfd 764 pipe_tcp[0] 724
+[23/Feb/2021:15:13:48 ] :File: ./src/server.c, Line: 00750:  thread server tcp set SCHED_FIFO warning
+[23/Feb/2021:15:13:48 ] :File: ./src/sdl.c, Line: 00665:  thread sdl set SCHED_FIFO warning
+[23/Feb/2021:15:13:48 ] :File: ./src/sdl.c, Line: 00561:  Initialized direct3d renderer.
+[23/Feb/2021:15:13:49 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:13:50 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:13:50 ] :File: ./src/sdl.c, Line: 00430:  area_id 0
+[23/Feb/2021:15:13:51 ] :File: ./src/sdl.c, Line: 00470:  send_pipe 
+[23/Feb/2021:15:13:51 ] :File: ./src/pipe.c, Line: 00098:  pipe tcp
+[23/Feb/2021:15:13:51 ] :File: ./src/server.c, Line: 00365:  select 1
+[23/Feb/2021:15:13:51 ] :File: ./src/server.c, Line: 00303:  read_msg_order(cli->recv_head) 2
+[23/Feb/2021:15:13:52 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:13:53 ] :File: ./src/sdl.c, Line: 00470:  send_pipe 
+[23/Feb/2021:15:13:53 ] :File: ./src/pipe.c, Line: 00098:  pipe tcp
+[23/Feb/2021:15:13:53 ] :File: ./src/server.c, Line: 00365:  select 1
+[23/Feb/2021:15:13:53 ] :File: ./src/server.c, Line: 00303:  read_msg_order(cli->recv_head) 2
+[23/Feb/2021:15:13:54 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:13:55 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:13:55 ] :File: ./src/sdl.c, Line: 00470:  send_pipe 
+[23/Feb/2021:15:13:55 ] :File: ./src/pipe.c, Line: 00098:  pipe tcp
+[23/Feb/2021:15:13:55 ] :File: ./src/server.c, Line: 00365:  select 1
+[23/Feb/2021:15:13:55 ] :File: ./src/server.c, Line: 00303:  read_msg_order(cli->recv_head) 2
+[23/Feb/2021:15:13:56 ] :File: ./src/sdl.c, Line: 00470:  send_pipe 
+[23/Feb/2021:15:13:56 ] :File: ./src/pipe.c, Line: 00098:  pipe tcp
+[23/Feb/2021:15:13:56 ] :File: ./src/server.c, Line: 00365:  select 1
+[23/Feb/2021:15:13:56 ] :File: ./src/server.c, Line: 00303:  read_msg_order(cli->recv_head) 2
+[23/Feb/2021:15:13:56 ] :File: ./src/sdl.c, Line: 00470:  send_pipe 
+[23/Feb/2021:15:13:56 ] :File: ./src/pipe.c, Line: 00098:  pipe tcp
+[23/Feb/2021:15:13:56 ] :File: ./src/server.c, Line: 00365:  select 1
+[23/Feb/2021:15:13:56 ] :File: ./src/server.c, Line: 00303:  read_msg_order(cli->recv_head) 2
+[23/Feb/2021:15:13:56 ] :File: ./src/sdl.c, Line: 00470:  send_pipe 
+[23/Feb/2021:15:13:56 ] :File: ./src/pipe.c, Line: 00098:  pipe tcp
+[23/Feb/2021:15:13:56 ] :File: ./src/server.c, Line: 00365:  select 1
+[23/Feb/2021:15:13:56 ] :File: ./src/server.c, Line: 00303:  read_msg_order(cli->recv_head) 2
+[23/Feb/2021:15:13:56 ] :File: ./src/sdl.c, Line: 00470:  send_pipe 
+[23/Feb/2021:15:13:56 ] :File: ./src/pipe.c, Line: 00098:  pipe tcp
+[23/Feb/2021:15:13:56 ] :File: ./src/server.c, Line: 00365:  select 1
+[23/Feb/2021:15:13:56 ] :File: ./src/server.c, Line: 00303:  read_msg_order(cli->recv_head) 2
+[23/Feb/2021:15:13:57 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:13:58 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:13:59 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:14:00 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:14:01 ] :File: ./src/sdl.c, Line: 00470:  send_pipe 
+[23/Feb/2021:15:14:01 ] :File: ./src/pipe.c, Line: 00098:  pipe tcp
+[23/Feb/2021:15:14:01 ] :File: ./src/server.c, Line: 00365:  select 1
+[23/Feb/2021:15:14:01 ] :File: ./src/server.c, Line: 00303:  read_msg_order(cli->recv_head) 2
+[23/Feb/2021:15:14:02 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:14:03 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:14:04 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:15:05 ] :File: ./src/configs.c, Line: 00040:  
+programe server: 
+ client_port 22000, control_port 23000, h264_port 23001, window_flag 1, window_size 2,
+[23/Feb/2021:15:15:05 ] :File: ./src/socket.c, Line: 00407:  tcp bind port 22001
+[23/Feb/2021:15:15:05 ] :File: ./src/socket.c, Line: 00407:  tcp bind port 22002
+[23/Feb/2021:15:15:05 ] :File: ./src/socket.c, Line: 00407:  tcp bind port 22003
+[23/Feb/2021:15:15:05 ] :File: ./src/sdl.c, Line: 00640:  SDL_ttf open ttf dir: ./font/msyh.ttf error
+[23/Feb/2021:15:15:05 ] :File: ./src/main.c, Line: 00108:  init server 
+[23/Feb/2021:15:15:05 ] :File: ./src/server.c, Line: 00768:  
+YZY REMOTE CONTROL SERVER VERSION :
+
+
+[23/Feb/2021:15:15:05 ] :File: ./src/rtspd.c, Line: 00646:  screen_width 1280 screen_height 720 vids_width 640 vids_height 360
+[23/Feb/2021:15:15:05 ] :File: ./src/server.c, Line: 00789:  rtsp chn SUCCESS
+[23/Feb/2021:15:15:05 ] :File: ./src/socket.c, Line: 00407:  tcp bind port 22000
+[23/Feb/2021:15:15:05 ] :File: ./src/server.c, Line: 00798:  create tcp sockfd SUCCESS
+[23/Feb/2021:15:15:05 ] :File: ./src/server.c, Line: 00806:  clients malloc 1024 SUCCESS
+[23/Feb/2021:15:15:05 ] :File: ./src/server.c, Line: 00817:  create thread tcp SUCCESS
+[23/Feb/2021:15:15:05 ] :File: ./src/server.c, Line: 00834:  create thread sdl SUCCESS
+[23/Feb/2021:15:15:05 ] :File: ./src/server.c, Line: 00651:  thread server tcp set SCHED_FIFO warning
+[23/Feb/2021:15:15:05 ] :File: ./src/sdl.c, Line: 00665:  thread sdl set SCHED_FIFO warning
+[23/Feb/2021:15:15:05 ] :File: ./src/server.c, Line: 00359:  maxfd 756 listenfd 756 pipe_tcp[0] 716
+[23/Feb/2021:15:15:05 ] :File: ./src/server.c, Line: 00750:  thread server tcp set SCHED_FIFO warning
+[23/Feb/2021:15:15:06 ] :File: ./src/sdl.c, Line: 00561:  Initialized direct3d renderer.
+[23/Feb/2021:15:15:06 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:15:07 ] :File: ./src/sdl.c, Line: 00430:  area_id 0
+[23/Feb/2021:15:15:07 ] :File: ./src/sdl.c, Line: 00470:  send_pipe 
+[23/Feb/2021:15:15:07 ] :File: ./src/server.c, Line: 00365:  select 1
+[23/Feb/2021:15:15:07 ] :File: ./src/server.c, Line: 00303:  read_msg_order(cli->recv_head) 2
+[23/Feb/2021:15:15:08 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:15:09 ] :File: ./src/sdl.c, Line: 00470:  send_pipe 
+[23/Feb/2021:15:15:09 ] :File: ./src/server.c, Line: 00365:  select 1
+[23/Feb/2021:15:15:09 ] :File: ./src/server.c, Line: 00303:  read_msg_order(cli->recv_head) 2
+[23/Feb/2021:15:15:10 ] :File: ./src/server.c, Line: 00365:  select 0
+[23/Feb/2021:15:15:10 ] :File: ./src/sdl.c, Line: 00470:  send_pipe 
+[23/Feb/2021:15:15:10 ] :File: ./src/server.c, Line: 00365:  select 1
+[23/Feb/2021:15:15:10 ] :File: ./src/server.c, Line: 00303:  read_msg_order(cli->recv_head) 2
+[23/Feb/2021:15:15:10 ] :File: ./src/sdl.c, Line: 00470:  send_pipe 
+[23/Feb/2021:15:15:10 ] :File: ./src/server.c, Line: 00365:  select 1
+[23/Feb/2021:15:15:10 ] :File: ./src/server.c, Line: 00303:  read_msg_order(cli->recv_head) 2
+[23/Feb/2021:15:15:11 ] :File: ./src/sdl.c, Line: 00470:  send_pipe 
+[23/Feb/2021:15:15:11 ] :File: ./src/server.c, Line: 00365:  select 1
+[23/Feb/2021:15:15:11 ] :File: ./src/server.c, Line: 00303:  read_msg_order(cli->recv_head) 2
+[23/Feb/2021:15:15:11 ] :File: ./src/sdl.c, Line: 00470:  send_pipe 
+[23/Feb/2021:15:15:11 ] :File: ./src/server.c, Line: 00365:  select 1
+[23/Feb/2021:15:15:11 ] :File: ./src/server.c, Line: 00303:  read_msg_order(cli->recv_head) 2
+[23/Feb/2021:15:15:11 ] :File: ./src/sdl.c, Line: 00470:  send_pipe 
+[23/Feb/2021:15:15:11 ] :File: ./src/server.c, Line: 00365:  select 1
+[23/Feb/2021:15:15:11 ] :File: ./src/server.c, Line: 00303:  read_msg_order(cli->recv_head) 2
+[23/Feb/2021:15:15:12 ] :File: ./src/server.c, Line: 00365:  select 0

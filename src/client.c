@@ -35,7 +35,7 @@ static int recv_done(struct client *cli)
 	{
 	    if(m_rtsp.is_running)
 		{
-			rtspd_chn_stop(&m_rtsp);
+			//rtspd_chn_stop(&m_rtsp);
 			close_fd(m_rtsp.video_fmt.fd);
 			m_rtsp.video_fmt.fd = -1;
 		}	

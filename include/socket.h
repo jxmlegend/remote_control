@@ -24,7 +24,9 @@ typedef enum PIPE_TYPE {
 
 enum MSG_TYPE{
 	/* pipe */
-	EXIT_PIPE = 2,
+	CONVERT_MODE_PIPE = 1,
+	CLOSE_ALL_CLIENT_PIPE,
+	EXIT_PIPE,
 
 	/* socket */
 	LOGIN_MSG,

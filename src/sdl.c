@@ -48,6 +48,7 @@ SDL_mutex *renderer_mutex;
 //pthread_mutex_t renderer_mutex = PTHREAD_MUTEX_INITIALIZER;
 SDL_cond *cond;
 extern struct client *control_cli;
+int control_flag = 0;
 
 FrameQueue frame_queue;
 
@@ -411,23 +412,28 @@ void sdl_loop()
         /* 鼠标按下 */
         if(event.type == SDL_MOUSEBUTTONDOWN)
         {
-            (void) time(&current_time);
-            if((current_time - last_time) > 1)
-            {
-                area_id = -1;
-                last_time = current_time;
-            }
-
-            if(area_id == get_area(event.motion.x, event.motion.y))
-            {
-				if(flags)
-				{
-				convert_model(area_id, CONTROL);
-				flags = 0;
+			if(!control_flag)
+			{
+            	(void) time(&current_time);
+	            if((current_time - last_time) > 1)
+	            {
+	                area_id = -1;
+	                last_time = current_time;
+	            }
+	
+	            if(area_id == get_area(event.motion.x, event.motion.y))
+	            {
+#if 0
+					if(rtsp[area_id].cli && rtsp[area_id].is_running)
+					{
+						//rtsp[area_id].cli->status = CONTROL;
+						//send_pipe();	
+					}
+#endif
 				}
-            }
-            area_id = get_area(event.motion.x, event.motion.y);
-            DEBUG("area_id %d", area_id);
+	            area_id = get_area(event.motion.x, event.motion.y);
+	            DEBUG("area_id %d", area_id);
+			}
             
             if(SDL_BUTTON_LEFT == event.button.button)
             {
@@ -466,7 +472,10 @@ void sdl_loop()
             send_control((char *)&key, sizeof(rfb_keyevent), KEYBD_MSG);
             if(event.key.keysym.sym == SDLK_ESCAPE)
             {
-				convert_model(area_id, PLAY);
+				//convert_model(area_id, PLAY);
+				//DEBUG("send_pipe ");	
+    			char buf[HEAD_LEN];
+    			send_pipe(buf, EXIT_PIPE, 0, PIPE_TCP);
             }
         }
         if(SDL_KEYUP == event.type)

@@ -2,13 +2,9 @@
 
 int handle_sighus;
 
-//void sigsegv(int);
-
 static void sig_quit_listen(int e)
 {
-    char s = 'S';
 	char buf[HEAD_LEN];	
-	
 	send_pipe(buf, EXIT_PIPE, 0, PIPE_TCP);
     DEBUG("recv sig stop programe !!");
 }
@@ -17,7 +13,6 @@ static void sig_quit_listen(int e)
 void init_signals()
 {
 #ifndef _WIN32
-
 	sigjmp_buf env;
     signal(SIGPIPE, SIG_IGN);
     //signal(SIGINT, SIG_IGN);

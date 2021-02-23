@@ -116,6 +116,7 @@ CAPTUREANDCAST_API int ExitControl()
 	//DEBUG("");
 	//send_pipe();
 	//return convert_mode(0);
+	
 }
 
 /*

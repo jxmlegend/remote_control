@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
 	(void)time(&current_time);
 
 	init_logs();
-	//init_signals();	
+	init_signals();	
 	init_configs();	
 		
 	parse_options(argc, argv);
@@ -89,6 +89,7 @@ int main(int argc, char *argv[])
         DEBUG("load wsa error ret:%d", ret);
         return ERROR;
     }
+
     ret = init_pipe();
     if(SUCCESS != ret)
     {

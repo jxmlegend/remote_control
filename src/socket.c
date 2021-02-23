@@ -37,7 +37,6 @@ void unload_wsa()
 #endif
 }
 
-
 unsigned char read_msg_syn(unsigned char* buf) 
 {
     return *(unsigned char*)&buf[DATA_SYN_OFFSET];
