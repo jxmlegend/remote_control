@@ -327,6 +327,7 @@ void simulate_keyboard(rfb_keyevent *key)
 {
 	if(!dpy)
 		return;
+	DEBUG("key->key %d", key->key);
 
 	/* a-z */
 	if(key->key >= 97 && key->key <= 122)
@@ -392,7 +393,7 @@ void simulate_keyboard(rfb_keyevent *key)
 				key->key = XK_KP_Enter;
 				break;
 			case 9:		//"tab"
-				key->key = XK_KP_Tab;
+				//key->key = XK_KP_Tab;
 				break;
 			case 1073741881: // "caps lock"
 				key->key = XK_Caps_Lock;
@@ -462,7 +463,7 @@ void simulate_keyboard(rfb_keyevent *key)
 				break;
 			//key->key = XK_BackSpace
 			default:
-				break;
+				return ;
 		}
 	}	
 	XTestFakeKeyEvent(dpy, XKeysymToKeycode(dpy, key->key), key->down, 0L);

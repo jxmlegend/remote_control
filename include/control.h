@@ -11,7 +11,6 @@
 #define MOUSE_WHEEL_DOWN    1<<5
 #define MOUSE_WHEEL_UP      1<<6
 
-
 enum control_msg_type{
     MOUSE = 0x03,
     KEYBOARD,

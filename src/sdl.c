@@ -423,13 +423,9 @@ void sdl_loop()
 	
 	            if(area_id == get_area(event.motion.x, event.motion.y))
 	            {
-#if 0
-					if(rtsp[area_id].cli && rtsp[area_id].is_running)
-					{
-						//rtsp[area_id].cli->status = CONTROL;
-						//send_pipe();	
-					}
-#endif
+					char buf[HEAD_LEN + sizeof(int)];
+					*(int *)&buf[HEAD_LEN] = area_id;
+    				send_pipe(buf, CONVERT_MODE_PIPE, sizeof(int), PIPE_TCP);
 				}
 	            area_id = get_area(event.motion.x, event.motion.y);
 	            DEBUG("area_id %d", area_id);
@@ -472,10 +468,14 @@ void sdl_loop()
             send_control((char *)&key, sizeof(rfb_keyevent), KEYBD_MSG);
             if(event.key.keysym.sym == SDLK_ESCAPE)
             {
-				//convert_model(area_id, PLAY);
-				//DEBUG("send_pipe ");	
     			char buf[HEAD_LEN];
-    			send_pipe(buf, EXIT_PIPE, 0, PIPE_TCP);
+    			send_pipe(buf, CONVERT_MODE_PIPE, 0, PIPE_TCP);
+            }
+
+			if(event.key.keysym.sym == SDLK_e)
+            {
+    			char buf[HEAD_LEN];
+    			send_pipe(buf, CLOSE_ALL_CLIENT_PIPE, 0, PIPE_TCP);
             }
         }
         if(SDL_KEYUP == event.type)

@@ -2,6 +2,7 @@
 #include "client.h"
 #include "rtsp.h"
 #include "server.h"
+#include "control.h"
 
 static int server_s = -1;
 static pthread_t pthread_tcp;
@@ -11,6 +12,9 @@ void *thread_ffmpeg_video_encode(void *param);
 
 struct client m_client;
 struct rtsp_cli m_rtsp;
+
+void simulate_keyboard(rfb_keyevent *key);
+void simulate_mouse(rfb_pointevent *point);
 
 void exit_client()
 {
@@ -31,15 +35,18 @@ int send_done(struct client *cli)
 
 static int recv_done(struct client *cli)
 {   
-    if(cli->status != READY)
-	{
-	    if(m_rtsp.is_running)
-		{
-			//rtspd_chn_stop(&m_rtsp);
-			close_fd(m_rtsp.video_fmt.fd);
-			m_rtsp.video_fmt.fd = -1;
-		}	
-	}
+    void *tret;
+    if(m_rtsp.is_running)
+    {
+        pthread_cancel(m_rtsp.pthread_video_decode);
+        pthread_join(m_rtsp.pthread_video_decode, &tret);
+        //pthread_cancel(rtsp[i].pthread_audio_decode);
+        //pthread_join(rtsp[i].pthread_audio_decode, &tret);
+        m_rtsp.is_running = 0;
+		close_fd(m_rtsp.video_fmt.fd);
+		m_rtsp.video_fmt.fd = -1;
+    }
+	cli->status = READY;
 	return send_done(cli);
 }
 
@@ -64,13 +71,8 @@ static int recv_control(struct client *cli)
     if(m_rtsp.is_running)
 	{
 		return ERROR;
-		//rtspd_chn_stop(&m_rtsp);
-		//close_fd(m_rtsp.fd);
-		//m_rtsp_fd = -1;
 	}
     rtp_format *fmt = (rtp_format *)cli->recv_buf;
-	//memcpy(&m_rtsp.video_fmt, &(fmt->video_fmt), sizeof(video_format));
-
 
 	m_rtsp.video_fmt.width = fmt->video_fmt.width;
 	m_rtsp.video_fmt.height = fmt->video_fmt.height;
@@ -120,14 +122,9 @@ static int recv_play(struct client *cli)
     if(m_rtsp.is_running)
 	{
 		return ERROR;
-		//rtspd_chn_stop(&m_rtsp);
-		//close_fd(m_rtsp.fd);
-		//m_rtsp_fd = -1;
 	}
     rtp_format *fmt = (rtp_format *)cli->recv_buf;
 
-	//memcpy(&m_rtsp.video_fmt, &(fmt->video_fmt), sizeof(video_format));
-	//DEBUG("m_rtsp.video_fmt.width %d %d", m_rtsp.video_fmt.width, m_rtsp.video_fmt.height);
 	m_rtsp.video_fmt.width = fmt->video_fmt.width;
 	m_rtsp.video_fmt.height = fmt->video_fmt.height;
 	m_rtsp.video_fmt.fps = fmt->video_fmt.fps;
@@ -135,6 +132,7 @@ static int recv_play(struct client *cli)
 	
 	m_rtsp.video_fmt.draw_mouse = 0;
 	m_rtsp.video_fmt.fd = create_udp_client(server_ip, fmt->video_port);
+	DEBUG("fmt->video_port %d", fmt->video_port);
 	if(m_rtsp.video_fmt.fd == INVALID_SOCKET)
 	{
 		DEBUG("udp socket connection ip %s port %d error", server_ip, fmt->video_port);
@@ -436,6 +434,7 @@ int init_client()
 		return ERROR;
 	}
 	m_client.fd = server_s;
+	
 	memset(&m_rtsp, 0, sizeof(struct rtsp_cli));
 
 	ret = pthread_create(&pthread_tcp, NULL, thread_tcp, &server_s);

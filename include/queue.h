@@ -8,19 +8,19 @@
 
 typedef struct 
 {
-  unsigned int uiSize;
-  unsigned char *pBuf;
-  unsigned char ucType;
+	uint32_t uiSize;
+	uint8_t *pBuf;
+	uint8_t ucType;
 }QUEUE_INDEX;
 
 
 typedef struct 
 {
-  unsigned int uiFront;
-  unsigned int uiRear;
-  unsigned int uiMaxBufSize;
-  unsigned int uiBufOffset;
-  unsigned char *pBuf;
+  uint32_t uiFront;
+  uint32_t uiRear;
+  uint32_t uiMaxBufSize;
+  uint32_t uiBufOffset;
+  uint8_t *pBuf;
   QUEUE_INDEX stIndex[MAX_QUEUESIZE];
 }QUEUE;
 

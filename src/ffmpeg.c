@@ -4,7 +4,7 @@
 
 #define CONTROL 5
 
-//extern QUEUE *vids_queue;
+extern QUEUE *vids_queue;
 
 extern struct rtsp_cli *rtsp;
 
@@ -102,17 +102,18 @@ void ffmpeg_video_decode(video_format *fmt)
     /* packet 不能用指针 否则会异常 */
     for(;;)
     {
-		if(empty_queue(&fmt->vids_queue))
-		{
+        if(empty_queue(&vids_queue[fmt->chn]))
+        {
             usleep(200);
             continue;
-		}
-
-        index = de_queue(&fmt->vids_queue);
+        }
+        index = de_queue(&vids_queue[fmt->chn]);
         packet.size = index->uiSize;
         packet.data = index->pBuf;
-        de_queuePos(&fmt->vids_queue);
+        de_queuePos(&vids_queue[fmt->chn]);
 
+
+		DEBUG("packet size %d", packet.size);
         ret = avcodec_decode_video2(codec_ctx, frame, &got_picture, &packet);
         if (got_picture)
         {

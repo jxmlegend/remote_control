@@ -70,7 +70,7 @@ int init_pipe()
     fcntl(pipe_event[0], F_SETFL, O_NONBLOCK);
     fcntl(pipe_event[1], F_SETFL, O_NONBLOCK);
 #endif
-
+	return SUCCESS;
 }
 
 

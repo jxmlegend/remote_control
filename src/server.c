@@ -15,10 +15,12 @@ static int send_done(struct client *cli);
 static int send_control(struct client *cli);
 static int send_play(struct client *cli);
 
-extern QUEUE *vids_queue;
+extern int control_flag;
 
 void *thread_ffmpeg_video_decode(void *param);
 //pthread_mutex_t client_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+extern QUEUE *vids_queue;
 
 void exit_server()
 {
@@ -41,13 +43,17 @@ static int close_client(struct client *cli)
 	if(cli->recv_buf)
 		free(cli->recv_buf);
 	
-	close_fd(cli->fd);
-	
 	cli->send_buf = NULL;
-	cli->recv_buf = NULL;
-	cli->fd = -1;
 
-	close_rtsp_chn(cli->chn);
+	cli->recv_buf = NULL;
+
+	if(cli->chn >= 0)
+		close_rtsp_chn(cli->chn);
+
+	close_fd(cli->fd);
+
+	cli->chn = -1;
+	cli->fd = -1;
 
 	free(cli);
 	return SUCCESS;
@@ -69,40 +75,39 @@ static int free_clients()
 
 static int convert_model(int chn)
 {
-#if 0
 	int i;
+	if(!rtsp[chn].cli || !rtsp[chn].is_running)
+		return SUCCESS;
+
+
 	for(i = 0; i < max_conn; i++)
 	{
 		if(!rtsp[i].cli)
 			continue;
 
-		if(model == PLAY)
-		{
-			rtsp[i].cli->status = PLAY;	
-		}
-		else if(model == CONTROL)
+		if(!control_flag)  //PLAY -> CONTROL
 		{
 			if(i == chn)
 				rtsp[i].cli->status = CONTROL;
 			else
 				rtsp[i].cli->status = READY;
 		}
+		else				//CONTROL - > PLAY
+		{
+			rtsp[i].cli->status = PLAY;	
+		}
 		send_done(rtsp[i].cli);	
 	}
+	control_flag = !control_flag;
+
 	control_cli = NULL;
 	clear_texture();
 	return SUCCESS;
-#endif
 }
 
 static int recv_done(struct client *cli)
 {
 	int ret;
-	DEBUG("cli->status %d chn %d is_running %d", cli->status, cli->chn, rtsp[cli->chn].is_running);
-	if(rtsp[cli->chn].is_running)
-	{
-		stop_rtsp_chn(cli->chn);
-	}
 	switch(cli->status)
 	{
 		case PLAY:
@@ -123,6 +128,11 @@ static int recv_done(struct client *cli)
 
 static int send_done(struct client *cli)
 {
+	DEBUG("cli->status %d chn %d is_running %d", cli->status, cli->chn, rtsp[cli->chn].is_running);
+	if(rtsp[cli->chn].is_running)
+	{
+		stop_rtsp_chn(cli->chn);
+	}
 	cli->send_size = 0;
 	set_request_head(cli->send_head, 0, DONE_MSG, cli->send_size);
     return send_request(cli);
@@ -133,18 +143,12 @@ static int recv_control(struct client *cli)
 	struct request *req = (struct request *)cli->recv_buf;
     if(req->code == 200)
     {   
-    	cli->status = CONTROL;
 		if(rtsp[cli->chn].is_running)
 		{
-			//rtspd_chn_stop(&rtsp[cli->chn]);
+			return ERROR;
 		}
 		control_cli = cli;
-
-		rtsp[cli->chn].is_running = 1;
-		rtsp[cli->chn].video_fmt.model = CONTROL;	
-		rtsp[cli->chn].cli = cli;
-		return pthread_create(&rtsp[cli->chn].pthread_video_decode, NULL, thread_ffmpeg_video_decode, 
-				&rtsp[cli->chn].video_fmt); 
+		return start_rtsp_chn(cli->chn, CONTROL);		
     }   
     else
     {   
@@ -180,19 +184,11 @@ static int recv_play(struct client *cli)
    struct request *req = (struct request *)cli->recv_buf;
     if(req->code == 200)
     {   
-        cli->status = PLAY;
 		if(rtsp[cli->chn].is_running)
 		{
-			//rtspd_chn_stop(&rtsp[cli->chn]);
-			DEBUG("running 111111111111111111111111");
+			return ERROR;
 		}
-		DEBUG("cli->chn %d", cli->chn);
-		
-		rtsp[cli->chn].is_running = 1;
-		rtsp[cli->chn].video_fmt.model = PLAY;	
-		rtsp[cli->chn].cli = cli;
-		return pthread_create(&rtsp[cli->chn].pthread_video_decode, NULL, thread_ffmpeg_video_decode, 
-				&rtsp[cli->chn].video_fmt); 
+		return start_rtsp_chn(cli->chn, PLAY);		
     }   
     else
     {   
@@ -209,6 +205,8 @@ static int send_play(struct client *cli)
     if(!cli->send_buf)
         return ERROR;
 
+	DEBUG("sizeof(rtp_format) %d", sizeof(rtp_format));
+	
     rtp_format *fmt = (rtp_format *)cli->send_buf;	
 
 	fmt->video_fmt.width = vids_width;
@@ -218,6 +216,7 @@ static int send_play(struct client *cli)
 
 	fmt->model = PLAY;
 	fmt->video_port = rtsp[cli->chn].video_port;
+	DEBUG("video_port %d 1111111111111111111", fmt->video_port);
 	
 	set_request_head(cli->send_head, 0, PLAY_MSG, cli->send_size);
     return send_request(cli);
@@ -239,7 +238,11 @@ static int send_options(struct client *cli)
     req->code = 200;
     set_request_head(cli->send_head, 0, OPTIONS_MSG, cli->send_size);
     send_request(cli);
-	return send_play(cli);
+
+	if(control_flag)
+		return SUCCESS;
+	else
+		return send_play(cli);
 }
 
 static int recv_options(struct client *cli)
@@ -354,7 +357,6 @@ static void tcp_loop(int listenfd)
         tv.tv_sec = 1;
         reset = allset;
         ret = select(maxfd + 1, &reset, NULL, NULL, &tv);
-		DEBUG("select %d", ret);
         if(ret == -1)
         {    
              if(errno == EINTR)
@@ -388,7 +390,7 @@ static void tcp_loop(int listenfd)
             memset(cli, 0, sizeof(struct client));
             cli->fd = connfd;
             cli->recv_size = HEAD_LEN;
-
+			cli->chn = -1;
 #ifdef _WIN32
 #if 0
 			ret = 1;
@@ -535,23 +537,30 @@ static void tcp_loop(int listenfd)
                     }
                     if(clients[i]->pos == clients[i]->recv_size)
                     {
-						switch(read_msg_order(cli->recv_head))
+						switch(read_msg_order(clients[i]->recv_head))
 						{
 							case EXIT_PIPE:
 								goto run_out;
 							case CONVERT_MODE_PIPE:
-								//ret = convert_model();										
+								if(clients[i]->recv_size)	
+									ret = convert_model(*(int *)clients[i]->recv_buf);	
+								else
+									ret = convert_model(0);										
 								break;
 							case CLOSE_ALL_CLIENT_PIPE:
 							{
 								int j;
-								for(j = 1; j <= maxi; i++)
+								for(j = 1; j <= maxi; j++)
 								{
+            						if(clients[j] == NULL || (clients[j]->fd) < 0)     
+										continue;	
+
 									FD_CLR(clients[j]->fd, &allset);
                                 	close_client(clients[j]);
                                 	clients[j] = NULL;
 								}
                                 total_connections = 0;
+								ret = SUCCESS;
 								break;	
 							}	
 							default:
@@ -561,7 +570,8 @@ static void tcp_loop(int listenfd)
 												
 						if(ret != SUCCESS)
 						{
-                            DEBUG("process msg error client index: %d ip: %s port %d",i, clients[i]->ip, clients[i]->port);
+                            DEBUG("process msg error client index: %d ip: %s port %d",
+									i, clients[i]->ip, clients[i]->port);
                             FD_CLR(clients[i]->fd, &allset);
                             close_client(clients[i]);
                             clients[i] = NULL;
@@ -715,6 +725,8 @@ static void udp_loop()
             {
                 ret = recvfrom(sockfd, (char *)rtsp[i].frame_buf + rtsp[i].frame_pos, MAX_VIDSBUFSIZE, 0,
                     (struct sockaddr*)&(rtsp[i].recv_addr), &socklen);
+
+				DEBUG("recvfrom %d", ret);
 				
                 tmp = &(rtsp[i].frame_buf[rtsp[i].frame_pos]);
                 rtsp[i].frame_pos += ret; 
@@ -724,7 +736,8 @@ static void udp_loop()
                 }    
                 if(rtsp[i].frame_pos == rtsp[i].frame_size + 8) 
                 {    
-                    en_queue(&rtsp[i].video_fmt.vids_queue, rtsp[i].frame_buf + 8,  rtsp[i].frame_pos - 8, 0x0);
+                    //en_queue(&rtsp[i].video_fmt.vids_queue, rtsp[i].frame_buf + 8,  rtsp[i].frame_pos - 8, 0x0);
+					en_queue(&vids_queue[i], rtsp[i].frame_buf + 8,  rtsp[i].frame_pos - 8, 0x0);
                     rtsp[i].frame_pos = 0; 
                     rtsp[i].frame_size = 0; 
                 }    
