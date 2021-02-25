@@ -48,7 +48,6 @@ void simulate_mouse(rfb_pointevent *point)
     //DEBUG("x %ld y %ld ", x, y);
 
     mouse_event(flags, (DWORD)x, (DWORD)y, wheel_movement, 0);
-	
 }
 
 void simulate_keyboard(rfb_keyevent *key)
