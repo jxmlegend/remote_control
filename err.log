@@ -1,10 +1,10 @@
 In file included from ./include/base.h:21:0,
-                 from ./src/server.c:1:
+                 from ./src/control.c:9:
 C:/Qt/4.8.6/mingw32/i686-w64-mingw32/include/winsock2.h:15:2: warning: #warning Please include winsock2.h before windows.h [-Wcpp]
  #warning Please include winsock2.h before windows.h
   ^
 In file included from ./include/base.h:43:0,
-                 from ./src/server.c:1:
+                 from ./src/control.c:9:
 ./include/configs.h:12:0: warning: "LOG_DIR" redefined [enabled by default]
      #define LOG_DIR  "./log"
  ^
@@ -18,154 +18,57 @@ In file included from ./include/base.h:43:0,
      #define LOG_ERR_FILE "c://Users//Public//Documents//YZYEduClient//Log//remote_monitor_err.log"
  ^
 In file included from ./include/base.h:44:0,
-                 from ./src/server.c:1:
+                 from ./src/control.c:9:
 ./include/socket.h:5:0: warning: "INVALID_SOCKET" redefined [enabled by default]
  #define INVALID_SOCKET -1
  ^
 In file included from C:/Qt/4.8.6/mingw32/i686-w64-mingw32/include/winsock.h:35:0,
                  from C:/Qt/4.8.6/mingw32/i686-w64-mingw32/include/windows.h:92,
                  from ./include/base.h:20,
-                 from ./src/server.c:1:
+                 from ./src/control.c:9:
 C:/Qt/4.8.6/mingw32/i686-w64-mingw32/include/psdk_inc/_socket_types.h:16:0: note: this is the location of the previous definition
  #define INVALID_SOCKET (SOCKET)(~0)
  ^
 In file included from ./include/base.h:44:0,
-                 from ./src/server.c:1:
+                 from ./src/control.c:9:
 ./include/socket.h:53:1: warning: no semicolon at end of struct or union [enabled by default]
  };
  ^
-In file included from ./src/server.c:1:0:
+In file included from ./src/control.c:9:0:
 ./include/base.h:75:0: warning: "ERROR" redefined [enabled by default]
  #define ERROR 1
  ^
 In file included from C:/Qt/4.8.6/mingw32/i686-w64-mingw32/include/windows.h:71:0,
                  from ./include/base.h:20,
-                 from ./src/server.c:1:
+                 from ./src/control.c:9:
 C:/Qt/4.8.6/mingw32/i686-w64-mingw32/include/wingdi.h:75:0: note: this is the location of the previous definition
  #define ERROR 0
  ^
-In file included from ./src/server.c:1:0:
+In file included from ./src/control.c:9:0:
 ./include/base.h:79:0: warning: "MAX_FILENAMELEN" redefined [enabled by default]
  #define MAX_FILENAMELEN 128
  ^
 In file included from ./include/base.h:43:0,
-                 from ./src/server.c:1:
+                 from ./src/control.c:9:
 ./include/configs.h:17:0: note: this is the location of the previous definition
  #define MAX_FILENAMELEN 256
  ^
-In file included from ./src/server.c:3:0:
-./include/rtsp.h:46:15: warning: empty declaration with storage class specifier does not redeclare tag [enabled by default]
- extern struct client;
-               ^
-./include/rtsp.h:48:15: warning: empty declaration with storage class specifier does not redeclare tag [enabled by default]
- extern struct video_format;
-               ^
-./include/rtsp.h:49:15: warning: empty declaration with storage class specifier does not redeclare tag [enabled by default]
- extern struct audio_format;
-               ^
-./src/server.c: In function 'exit_server':
-./src/server.c:29:5: warning: implicit declaration of function 'log_msg' [-Wimplicit-function-declaration]
-     DEBUG("pthread_exit %d display", (int)tret);
-     ^
-./src/server.c: In function 'close_client':
-./src/server.c:50:3: warning: implicit declaration of function 'close_rtsp_chn' [-Wimplicit-function-declaration]
-   close_rtsp_chn(cli->chn);
-   ^
-./src/server.c:52:2: warning: implicit declaration of function 'close_fd' [-Wimplicit-function-declaration]
-  close_fd(cli->fd);
-  ^
-./src/server.c: In function 'free_clients':
-./src/server.c:73:1: warning: no return statement in function returning non-void [-Wreturn-type]
- }
- ^
-./src/server.c: In function 'convert_model':
-./src/server.c:103:2: warning: implicit declaration of function 'clear_texture' [-Wimplicit-function-declaration]
-  clear_texture();
-  ^
-./src/server.c: In function 'send_done':
-./src/server.c:133:3: warning: implicit declaration of function 'stop_rtsp_chn' [-Wimplicit-function-declaration]
-   stop_rtsp_chn(cli->chn);
-   ^
-./src/server.c:136:2: warning: implicit declaration of function 'set_request_head' [-Wimplicit-function-declaration]
-  set_request_head(cli->send_head, 0, DONE_MSG, cli->send_size);
-  ^
-./src/server.c:137:5: warning: implicit declaration of function 'send_request' [-Wimplicit-function-declaration]
-     return send_request(cli);
-     ^
-./src/server.c: In function 'recv_control':
-./src/server.c:150:3: warning: implicit declaration of function 'start_rtsp_chn' [-Wimplicit-function-declaration]
-   return start_rtsp_chn(cli->chn, CONTROL);  
-   ^
-./src/server.c: In function 'send_control':
-./src/server.c:161:6: warning: unused variable 'ret' [-Wunused-variable]
-  int ret;
-      ^
-./src/server.c: In function 'send_play':
-./src/server.c:201:6: warning: unused variable 'ret' [-Wunused-variable]
-  int ret;
-      ^
-./src/server.c: In function 'send_options':
-./src/server.c:226:9: warning: unused variable 'ret' [-Wunused-variable]
-     int ret;
+./src/control.c: In function 'simulate_keyboard':
+./src/control.c:56:9: warning: implicit declaration of function 'get_keycode' [-Wimplicit-function-declaration]
+  struct keycode *code = get_keycode(key->key); 
          ^
-./src/server.c: In function 'recv_options':
-./src/server.c:252:2: warning: implicit declaration of function 'rtspd_get_freechn' [-Wimplicit-function-declaration]
-  int free_chn = rtspd_get_freechn();
-  ^
-./src/server.c: In function 'recv_login':
-./src/server.c:289:2: warning: implicit declaration of function 'get_version' [-Wimplicit-function-declaration]
-  get_version(&server_major, &server_minor);
-  ^
-./src/server.c:290:2: warning: pointer targets in passing argument 1 of 'sscanf' differ in signedness [-Wpointer-sign]
-  sscanf(cli->recv_buf, VERSIONFORMAT, &client_major, &client_minor);
-  ^
-In file included from ./include/base.h:4:0,
-                 from ./src/server.c:1:
-C:/Qt/4.8.6/mingw32/i686-w64-mingw32/include/stdio.h:387:15: note: expected 'const char * __restrict__' but argument is of type 'unsigned char *'
-   int __cdecl sscanf(const char * __restrict__ _Src,const char * __restrict__ _Format,...) __MINGW_ATTRIB_DEPRECATED_SEC_WARN;
-               ^
-./src/server.c: In function 'process_server_msg':
-./src/server.c:301:2: warning: implicit declaration of function 'read_msg_order' [-Wimplicit-function-declaration]
-  DEBUG("read_msg_order(cli->recv_head) %d", read_msg_order(cli->recv_head));
-  ^
-./src/server.c: In function 'tcp_loop':
-./src/server.c:477:21: warning: implicit declaration of function 'read_msg_syn' [-Wimplicit-function-declaration]
-                     if(read_msg_syn(clients[i]->recv_head) != DATA_SYN)
-                     ^
-./src/server.c:489:21: warning: implicit declaration of function 'read_msg_size' [-Wimplicit-function-declaration]
-                     clients[i]->recv_size = read_msg_size(clients[i]->recv_head);
-                     ^
-./src/server.c:521:9: warning: pointer targets in passing argument 2 of 'recv' differ in signedness [-Wpointer-sign]
-         clients[i]->recv_size - clients[i]->pos, 0)) <= 0)
-         ^
-In file included from C:/Qt/4.8.6/mingw32/i686-w64-mingw32/include/windows.h:92:0,
-                 from ./include/base.h:20,
-                 from ./src/server.c:1:
-C:/Qt/4.8.6/mingw32/i686-w64-mingw32/include/winsock.h:296:34: note: expected 'char *' but argument is of type 'unsigned char *'
-   WINSOCK_API_LINKAGE int WSAAPI recv(SOCKET s,char *buf,int len,int flags);
-                                  ^
-./src/server.c: In function 'udp_loop':
-./src/server.c:704:3: warning: implicit declaration of function 'create_udp_server' [-Wimplicit-function-declaration]
-   rtsp[i].video_fd = create_udp_server(NULL, rtsp[i].video_port, &(rtsp[i].recv_addr));
+./src/control.c:56:25: warning: initialization makes pointer from integer without a cast [enabled by default]
+  struct keycode *code = get_keycode(key->key); 
+                         ^
+./src/control.c: In function 'init_simulate':
+./src/control.c:128:14: error: 'keybd_key' undeclared (first use in this function)
+  for (i = 0; keybd_key[i].value != -1; i++)
+              ^
+./src/control.c:128:14: note: each undeclared identifier is reported only once for each function it appears in
+./src/control.c:130:3: warning: implicit declaration of function 'set_keycode' [-Wimplicit-function-declaration]
+   ret = set_keycode(keybd_key[i].key, &keybd_key[i]);
    ^
-./src/server.c:739:16: error: 'vids_queue' undeclared (first use in this function)
-      en_queue(&vids_queue[i], rtsp[i].frame_buf + 8,  rtsp[i].frame_pos - 8, 0x0);
-                ^
-./src/server.c:739:16: note: each undeclared identifier is reported only once for each function it appears in
-./src/server.c:697:20: warning: unused variable 'count' [-Wunused-variable]
-     unsigned short count = 0;
-                    ^
-./src/server.c:695:18: warning: unused variable 'offset' [-Wunused-variable]
-     unsigned int offset = 0;
-                  ^
-./src/server.c:694:18: warning: unused variable 'total_size' [-Wunused-variable]
-     unsigned int total_size = 0;
-                  ^
-./src/server.c: In function 'init_server':
-./src/server.c:807:2: warning: implicit declaration of function 'init_rtsp_chn' [-Wimplicit-function-declaration]
-  ret = init_rtsp_chn();
-  ^
-./src/server.c:815:2: warning: implicit declaration of function 'create_tcp_server' [-Wimplicit-function-declaration]
-  server_s = create_tcp_server(NULL, client_port);
-  ^
-make: *** [server.o] Error 1
+./src/control.c:133:4: warning: implicit declaration of function 'log_msg' [-Wimplicit-function-declaration]
+    DEBUG("ret %d hash map put error i %d keybd_key[i].sdl_key %d keybd_key[i].simulate_key %d", ret ,i, 
+    ^
+make: *** [control.o] Error 1

@@ -21,6 +21,8 @@ typedef struct
   uint32_t uiMaxBufSize;
   uint32_t uiBufOffset;
   uint8_t *pBuf;
+  sem_t sem;
+
   QUEUE_INDEX stIndex[MAX_QUEUESIZE];
 }QUEUE;
 

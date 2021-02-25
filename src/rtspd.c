@@ -573,6 +573,8 @@ int free_rtspd()
 {
     int i;
     void *tret;
+    if(vids_queue)
+        free(vids_queue);
 
     for(i = 0; i < max_conn; i++)
     {
@@ -605,8 +607,6 @@ int start_rtsp_chn(int chn, int model)
 	if(rtsp[chn].is_running)
 		return ERROR;
 
-	rtsp[chn].is_running = 1;
-	rtsp[chn].video_fmt.model = model;
 
 	if(rtsp[chn].video_fd)
 	{
@@ -629,6 +629,8 @@ int start_rtsp_chn(int chn, int model)
 			return ERROR;
 		}
 	}
+	rtsp[chn].is_running = 1;
+	rtsp[chn].video_fmt.model = model;
 	return ret;
 }
 
@@ -644,6 +646,7 @@ int stop_rtsp_chn(int chn)
         //pthread_join(rtsp[i].pthread_audio_decode, &tret);
 		rtsp[chn].is_running = 0;
 	}
+	clear_texture();
 	return SUCCESS;	
 }
 

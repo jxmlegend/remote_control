@@ -27,54 +27,33 @@ static void do_exit()
 
 static void parse_options(int argc, char *argv[])
 {   
-#if 0
-    int ch;
-    while((ch = getopt(argc, argv, "t:s:n:p:h")) != -1)
+    int ret = 0;
+    char buf[126] = {0};
+    switch(argc)
     {   
-        switch(ch)
-        {   
-            case 't':
-                if(strlen(optarg) > 8)
-                {   
-                    DEBUG("tftp ip:%s", optarg);
-                    strcpy(conf.tftp_ip, optarg);
-                }
-                break;
-            case 's':
-                if(strlen(optarg) > 8)
-                {   
-                    DEBUG("server ip:%s", optarg);
-                    strcpy(conf.server.ip, optarg);
-                }
-                break;
-            case 'n':
-                if(strlen(optarg) > 8)
-                {   
-                    DEBUG("nfs ip:%s", optarg);
-                    strcpy(conf.nfs_ip, optarg);
-                }
-                break;                  
-            case 'p':                   //httpd
-                if(strlen(optarg) > 8)
-                {   
-                    DEBUG("http ip:%s", optarg);
-                    strcpy(conf.http_ip, optarg);
-                }
-                break;
-            case 'h':
-                usage();
-                break;
-            default:
-                break;
-        }
-    }
-#endif
+        case 3:
+            server_port = atoi(argv[2]);
+        case 2:
+            server_ip = strdup(argv[1]);
+        default:
+            break;
+    }   
+
+    if(!server_ip || server_port >= 65535 || server_port <= 0)
+    {   
+        ret = read_profile_string(CLIENT_SECTION, CLIENT_IP_KEY, buf, sizeof(buf), DEFAULT_IP_VALUE, CONFIG_FILE);
+        if(server_ip)
+            free(server_ip);
+    
+        server_ip = strdup(buf);
+        server_port = read_profile_int(CLIENT_SECTION, CLIENT_PORT_KEY, DEFAULT_PORT_VALUE, CONFIG_FILE);
+    }   
 }
 
 int main(int argc, char *argv[])
 {
 	int ret;
-	
+
 	(void)time(&current_time);
 
 	init_logs();

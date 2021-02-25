@@ -34,10 +34,10 @@ typedef struct _rfb_textmsg
 
 typedef struct _rfb_key_event
 {
-    char down;
-    int key;            //SDL keycode
-    int scan_code;
-    unsigned short mod;         //组合键
+    uint16_t down;
+    uint32_t key;            //SDL keycode
+    uint32_t scan_code;
+    uint16_t mod;         //组合键
 }rfb_keyevent;
 
 typedef struct _rfb_pointer_evnet
@@ -47,6 +47,9 @@ typedef struct _rfb_pointer_evnet
     short y;
     short wheel;
 }rfb_pointevent;
+
+
+
 
 #endif
 

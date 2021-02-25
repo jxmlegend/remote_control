@@ -31,17 +31,17 @@ CONFIG_COMPILER = gnu
 
 outdir = ./bin
 
-exeobj = ScreenCast
+exeobj = RemoteMonitor
 
-dllobj = ScreenCast.dll
+dllobj = RemoteMonitor.dll
 
 qtobj = qt_window
 
-libobj = libScreenCast.dll.a
+libobj = libRemoteMonitor.dll.a
 
 mainobj = main.o socket.o frame.o packet.o version.o audio.o video.o avi_enc.o log.o crc.o rtspd.o rtp.o rtcp.o  \
 		mmap_cache.o alarm.o signals.o list.o dll.o pipe.o ffmpeg.o sdl.o client.o h264.o server.o tools.o inirw.o configs.o \
-		queue.o control.o
+		queue.o control.o hash_map.o rbtree.o keycode.o
 
 cppobj = 
 
@@ -57,8 +57,7 @@ CFLAGS := -I. -I./include/ -I$(SDL_DIR)/include -I$(FFMPEG_DIR)/include \
 
 ifeq ($(TARGET_ARCH), arm)
 CFLAGS += -lX11 -lpthread  -lXtst  -lXext -lXinerama -lXrandr -lXfixes -lXdamage
-			#-I./vpu/include -L./vpu/lib -lvpu -lvpu_avcdec -lion_vpu -lrk_codec -lvpu_avcenc  -lGLESv2  -lUMP \
-			-lpthread #-lvpu -lvpu_avcdec -lvpu_avcenc 
+DEFINES += -D ARM
 else ifeq ($(TARGET_ARCH), x86)
 CFLAGS += -lmingw32 -lm -lws2_32 -lpthreadGC2 -lgdi32 
 else ifeq ($(TARGET_ARCH), x64)
@@ -111,9 +110,14 @@ dll:$(dllobj)
 qt:
 	cd $(QT_DIR) && $(QMAKE) 
 	$(MAKE) -C $(QT_DIR) -j4 
-	#cd $(QT_DIR) && /c/Qt/4.8.6/mingw32/bin/mingw32-make.exe -f Makefile.Debug
 
 clean:
 	rm -f *.o $(outdir)/$(exeobj) $(outdir)/*.dll $(outdir)/*.a
-	#cd $(QT_DIR) && $(MAKE) clean
 
+
+
+
+#cd $(QT_DIR) && /c/Qt/4.8.6/mingw32/bin/mingw32-make.exe -f Makefile.Debug
+#cd $(QT_DIR) && $(MAKE) clean
+#-I./vpu/include -L./vpu/lib -lvpu -lvpu_avcdec -lion_vpu -lrk_codec -lvpu_avcenc  -lGLESv2  -lUMP \
+-lpthread #-lvpu -lvpu_avcdec -lvpu_avcenc 

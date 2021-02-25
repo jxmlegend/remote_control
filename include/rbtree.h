@@ -129,13 +129,16 @@ static inline void rb_set_color(struct rb_node *rb, int color)
 {
     rb->rb_parent_color = (rb->rb_parent_color & ~1) | color;
 }
-/*
-#define offsetof(TYPE, MEMBER) ((size_t) &((TYPE *)0)->MEMBER)
 
-#define container_of(ptr, type, member) ({          \
-    const typeof( ((type *)0)->member ) *__mptr = (ptr);    \
-    (type *)( (char *)__mptr - offsetof(type,member) );})
-*/
+#if 0
+#define offsetof(TYPE, MEMBER) ((size_t) &((TYPE *)0)->MEMBER)
+#endif
+
+#define container_of(ptr, type, member) ({	    \
+	const typeof( ((type *)0)->member ) *__mptr = (ptr);    \
+	(type *)( (char *)__mptr - offsetof(type,member) );})
+
+
 #define RB_ROOT    (struct rb_root) { NULL, }
 #define    rb_entry(ptr, type, member) container_of(ptr, type, member)
 
@@ -152,6 +155,7 @@ static inline void rb_init_node(struct rb_node *rb)
 }
 
 extern void rb_insert_color(struct rb_node *, struct rb_root *);
+
 extern void rb_erase(struct rb_node *, struct rb_root *);
 
 typedef void (*rb_augment_f)(struct rb_node *node, void *data);

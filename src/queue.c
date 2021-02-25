@@ -8,6 +8,8 @@ void init_queue(QUEUE *pQueue,unsigned char *pucBuf,unsigned int uiMaxBufSize)
   pQueue->pBuf=pucBuf;
   pQueue->uiMaxBufSize=uiMaxBufSize;
   pQueue->uiBufOffset=0;
+	//sem
+ 	sem_init(&pQueue->sem, 0, 0);
 }
 
 unsigned char en_queue(QUEUE *pQueue,unsigned char *ucpData,unsigned int uiSize,unsigned char ucType)
@@ -28,12 +30,15 @@ unsigned char en_queue(QUEUE *pQueue,unsigned char *ucpData,unsigned int uiSize,
     memcpy(&pQueue->pBuf[pQueue->uiBufOffset],ucpData,uiSize);
     pQueue->uiBufOffset+=uiSize;
     pQueue->uiRear=uiPos;
+
+	sem_post(&pQueue->sem);
     return 0;
   }
 }
 
 QUEUE_INDEX * de_queue(QUEUE *pQueue)
 {
+	sem_wait(&pQueue->sem);
   return &(pQueue->stIndex[pQueue->uiFront]);
 }
 

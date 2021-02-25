@@ -101,9 +101,7 @@ CAPTUREANDCAST_API int StopMonitorServer()
 */
 CAPTUREANDCAST_API int DisconnectAllClient()
 {
-	//DEBUG("");
-	//return close_clients();
-	//send_pipe();
+	return send_close_all_client_pipe();
 }
 
 /*
@@ -113,10 +111,7 @@ CAPTUREANDCAST_API int DisconnectAllClient()
 */
 CAPTUREANDCAST_API int ExitControl()
 {
-	//DEBUG("");
-	//send_pipe();
-	//return convert_mode(0);
-	
+	return send_convert_model_pipe(0);	
 }
 
 /*
@@ -128,7 +123,44 @@ CAPTUREANDCAST_API int ExitControl()
 */
 CAPTUREANDCAST_API int StartMonitorClient(const char* serverIp, const int serverPort, const char* clientFlag)
 {
+	int ret;
 
+	server_flag = 0;
+    if(running)
+    {
+        DEBUG("server already running");
+        return ERROR;
+    }
+
+   	init_logs();
+    ret = load_wsa();
+    if(SUCCESS != ret)
+    {
+        DEBUG("load wsa error ret:%d", ret);
+        return ERROR;
+    }
+#if 0
+    ret = init_pipe();
+    if(SUCCESS != ret)
+    {
+        DEBUG("init pipe error ret:%d", ret);
+        return ERROR;
+    }
+#endif
+
+ 	if(server_ip)
+		free(server_ip);
+
+	server_ip = strdup(serverIp);
+	server_port = serverPort;
+
+	if(!init_flag)
+	{
+		init_SDL();
+		init_flag = 1;	
+	}
+	running = 1;
+	return init_client();
 }
 
 /*
@@ -145,13 +177,13 @@ CAPTUREANDCAST_API int SetPageAttribute(const int pageIndex, const int pageSize,
 }
 
 /*
-获取当前页面客户端在线数量(教师端调用)
-@param NULL
-返回0-25, 客户端在线数量
+	获取当前页面客户端在线数量(教师端调用)
+	@param NULL
+	返回0-25, 客户端在线数量
 */
 CAPTUREANDCAST_API int GetPageCount()
 {
-    return SUCCESS;
+    return total_connections;
 }
 
 void stop_server()

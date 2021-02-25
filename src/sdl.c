@@ -311,91 +311,6 @@ void sdl_loop()
 
 	int flags = 1;
 	time_t last_time = current_time;
-#if 0
-	for(;;)
-	{
-		refresh_loop_wait_event(&event);
-		switch(event.type)
-		{
-			case SDL_MOUSEWHEEL:
-				mouse.wheel = event.wheel.y;
-            	mouse.x = old_x;
-            	mouse.y = old_y;
-            	send_control((char *)&mouse, sizeof(mouse_event), MOUSE);
-            	mouse.wheel = 0;
-				break;	
-			case SDL_MOUSEBUTTONDOWN:
-				if(server_flag)
-				{
-					(void) time(&current_time);
-					if((current_time - last_time) > 1)
-					{
-						area_id = -1;
-						last_time = current_time;	
-					}	
-					if(area_id == get_area(event.motion.x, event.motion.y))
-					{	
-						convert_model(area_id, CONTROL);
-					}
-					area_id = get_area(event.motion.x, event.motion.y);
-				}
-				if(SDL_BUTTON_LEFT == event.button.button)
-            	{
-                	mouse.mask |= (1<<1);
-            	}
-            	if(SDL_BUTTON_RIGHT == event.button.button)
-            	{
-                	mouse.mask |= (1<<3);
-            	}
-				break;
-			case SDL_MOUSEBUTTONUP:
-            	if(SDL_BUTTON_LEFT == event.button.button)
-            	{
-                	point.mask |= (1<<2);
-            	}
-            	if(SDL_BUTTON_RIGHT == event.button.button)
-            	{
-                	point.mask |= (1<<4);
-            	}
-			case SDL_MOUSEMOTION:
-				if(mouse.mask != 0)
-				{
-					mouse.x = event.motion.x;
-					mouse.x = event.motion.x;
-					mouse.x = event.motion.x;
-				}	
-				break;
-
-			case SDL_KEYDOWN:
-				if(event.key.keysym.sym == SDLK_ESCAPE)
-            	{
-					DEBUG("convert_model 11111Z");
-					convert_model(0, PLAY);
-            	}
-				keybd.key = event.key.keysym.sym;
-				keybd.mod = event.key.keysym.mod;
-				send_control((char *)&keybd, sizeof(keybd_event), KEYBOARD);
-				break;
-			case SDL_KEYUP:
-				keybd.key = event.key.keysym.sym;
-				keybd.mod = event.key.keysym.mod;
-				keybd.down = 0;
-				send_control((char *)&keybd, sizeof(keybd_event), KEYBOARD);
-				break;
-			case SDL_WINDOWEVENT:
-				break;	
-			case EVENT_QUIT:
-				DEBUG("EVENT_QUIT ");
-				goto run_out;
-			case SDL_QUIT:
-				stop_server();
-				DEBUG("SDL_QUIT");
-				goto run_out;
-			default:
-				break;
-		}	
-	}
-#endif
 
 	for(;;)
 	{
@@ -423,9 +338,7 @@ void sdl_loop()
 	
 	            if(area_id == get_area(event.motion.x, event.motion.y))
 	            {
-					char buf[HEAD_LEN + sizeof(int)];
-					*(int *)&buf[HEAD_LEN] = area_id;
-    				send_pipe(buf, CONVERT_MODE_PIPE, sizeof(int), PIPE_TCP);
+					send_convert_model_pipe(area_id);
 				}
 	            area_id = get_area(event.motion.x, event.motion.y);
 	            DEBUG("area_id %d", area_id);
@@ -464,19 +377,13 @@ void sdl_loop()
         {
             key.key = event.key.keysym.sym; //*(SDL_GetKeyName(event.key.keysym.sym));
             key.mod = event.key.keysym.mod; //*(SDL_GetKeyName(event.key.keysym.sym));
+			DEBUG("key.key %d", key.key);
             key.down = 1;
             send_control((char *)&key, sizeof(rfb_keyevent), KEYBD_MSG);
-            if(event.key.keysym.sym == SDLK_ESCAPE)
-            {
-    			char buf[HEAD_LEN];
-    			send_pipe(buf, CONVERT_MODE_PIPE, 0, PIPE_TCP);
-            }
-
-			if(event.key.keysym.sym == SDLK_e)
-            {
-    			char buf[HEAD_LEN];
-    			send_pipe(buf, CLOSE_ALL_CLIENT_PIPE, 0, PIPE_TCP);
-            }
+			if(event.key.keysym.sym == SDLK_ESCAPE)
+			{
+				send_convert_model_pipe(0);
+			}	
         }
         if(SDL_KEYUP == event.type)
         {
@@ -489,7 +396,12 @@ void sdl_loop()
 		if(EVENT_QUIT == event.type)
 				goto run_out;
 		if(SDL_QUIT == event.type)
+		{
+#ifdef _WIN32
+				stop_server();
+#endif
 				goto run_out;
+		}
 	}
 run_out:
 	destory_thread_tcp();	
@@ -681,3 +593,90 @@ void *thread_sdl(void *param)
 	return (void *)&ret;
 }
 
+
+
+#if 0
+	for(;;)
+	{
+		refresh_loop_wait_event(&event);
+		switch(event.type)
+		{
+			case SDL_MOUSEWHEEL:
+				mouse.wheel = event.wheel.y;
+            	mouse.x = old_x;
+            	mouse.y = old_y;
+            	send_control((char *)&mouse, sizeof(mouse_event), MOUSE);
+            	mouse.wheel = 0;
+				break;	
+			case SDL_MOUSEBUTTONDOWN:
+				if(server_flag)
+				{
+					(void) time(&current_time);
+					if((current_time - last_time) > 1)
+					{
+						area_id = -1;
+						last_time = current_time;	
+					}	
+					if(area_id == get_area(event.motion.x, event.motion.y))
+					{	
+						convert_model(area_id, CONTROL);
+					}
+					area_id = get_area(event.motion.x, event.motion.y);
+				}
+				if(SDL_BUTTON_LEFT == event.button.button)
+            	{
+                	mouse.mask |= (1<<1);
+            	}
+            	if(SDL_BUTTON_RIGHT == event.button.button)
+            	{
+                	mouse.mask |= (1<<3);
+            	}
+				break;
+			case SDL_MOUSEBUTTONUP:
+            	if(SDL_BUTTON_LEFT == event.button.button)
+            	{
+                	point.mask |= (1<<2);
+            	}
+            	if(SDL_BUTTON_RIGHT == event.button.button)
+            	{
+                	point.mask |= (1<<4);
+            	}
+			case SDL_MOUSEMOTION:
+				if(mouse.mask != 0)
+				{
+					mouse.x = event.motion.x;
+					mouse.x = event.motion.x;
+					mouse.x = event.motion.x;
+				}	
+				break;
+
+			case SDL_KEYDOWN:
+				if(event.key.keysym.sym == SDLK_ESCAPE)
+            	{
+					DEBUG("convert_model 11111Z");
+					convert_model(0, PLAY);
+            	}
+				keybd.key = event.key.keysym.sym;
+				keybd.mod = event.key.keysym.mod;
+				send_control((char *)&keybd, sizeof(keybd_event), KEYBOARD);
+				break;
+			case SDL_KEYUP:
+				keybd.key = event.key.keysym.sym;
+				keybd.mod = event.key.keysym.mod;
+				keybd.down = 0;
+				send_control((char *)&keybd, sizeof(keybd_event), KEYBOARD);
+				break;
+			case SDL_WINDOWEVENT:
+				break;	
+			case EVENT_QUIT:
+				DEBUG("EVENT_QUIT ");
+				goto run_out;
+			case SDL_QUIT:
+				stop_server();
+				DEBUG("SDL_QUIT");
+				goto run_out;
+			default:
+				break;
+		}	
+	}
+#endif

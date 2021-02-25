@@ -133,6 +133,7 @@ static int recv_play(struct client *cli)
 	m_rtsp.video_fmt.draw_mouse = 0;
 	m_rtsp.video_fmt.fd = create_udp_client(server_ip, fmt->video_port);
 	DEBUG("fmt->video_port %d", fmt->video_port);
+	DEBUG("fmt->width %d fmt->height %d", fmt->video_fmt.width, fmt->video_fmt.height);
 	if(m_rtsp.video_fmt.fd == INVALID_SOCKET)
 	{
 		DEBUG("udp socket connection ip %s port %d error", server_ip, fmt->video_port);
@@ -426,6 +427,14 @@ static void *thread_tcp(void *param)
 int init_client()
 {
 	int ret;
+
+	ret = init_simulate();
+	if(SUCCESS != ret)
+	{
+		DEBUG("simulate keycode init error");
+		return ERROR;
+	}
+
 	server_s = create_tcp_client(server_ip, server_port);
 	memset(&m_client, 0, sizeof(struct client));
 	if(server_s == -1)

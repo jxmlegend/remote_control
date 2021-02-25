@@ -24,7 +24,7 @@ extern int max_conn;
 extern int h264_port;
 extern int control_port;
 
-
+extern int total_connections;
 
 #ifdef _WIN32
     extern HWND hwnd;

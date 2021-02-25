@@ -104,14 +104,19 @@ int send_pipe(char *buf, short cmd, int size, int type)
 }
 
 
-int send_convert_model_pipe()
+int send_convert_model_pipe(int chn)
 {
-
+	char buf[HEAD_LEN + sizeof(int)];
+ 	*(int *)&buf[HEAD_LEN] = chn;
+ 	send_pipe(buf, CONVERT_MODE_PIPE, sizeof(int), PIPE_TCP);
+	return SUCCESS;
 }
 
 int send_close_all_client_pipe()
 {
-
+	char buf[HEAD_LEN];
+	send_pipe(buf, CLOSE_ALL_CLIENT_PIPE, 0, PIPE_TCP);
+	return SUCCESS;
 }
 
 
